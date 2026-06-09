@@ -19,8 +19,9 @@ Current safety principles:
 - Write-capable runners require Workspace Trust.
 - Permission profiles are explicit.
 - Generic CLI execution is configurable and should be reviewed before use.
-- Artifacts are stored locally for auditability.
+- Artifacts are stored locally for auditability and may include prompts, notes, paths, logs, summaries, changed-file lists, and diffs.
 - Secrets must not be written into task specs, prompts, logs, or artifacts.
+- Sanitize any local task records or artifacts before sharing them in public issues.
 - Users are responsible for every runner, provider, command, permission profile, repository, branch, remote action, and generated change they authorize.
 
 See [User Responsibility Disclaimer](DISCLAIMER.md) for the plain-language responsibility notice included with the extension.

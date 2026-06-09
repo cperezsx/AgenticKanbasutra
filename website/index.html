@@ -171,8 +171,13 @@
             create branches, commit, push, or consume paid provider resources. Review what is
             generated before accepting it.
           </p>
+          <p>
+            Task records and run artifacts stay in VS Code extension storage on your machine, but
+            they may contain prompts, notes, logs, paths, summaries, changed files, and diffs.
+          </p>
           <ul class="signal-list">
             <li>Keep secrets out of specs and attached context</li>
+            <li>Sanitize artifacts before sharing them publicly</li>
             <li>Prefer worktree isolation for write-capable runs</li>
             <li>Treat command templates as trusted code</li>
             <li>Use bypass permissions only when explicitly needed</li>

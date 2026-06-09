@@ -180,10 +180,13 @@ Provider CLIs must be installed and authenticated separately. AgenticKanbasutra 
 
 AgenticKanbasutra can launch local commands and coding agents that may edit files, create branches, commit, push, or consume paid provider resources depending on your settings.
 
+Task records and run artifacts are stored locally in VS Code extension storage. They can include repository paths, prompts, notes, attached context, stdout/stderr, summaries, changed-file lists, and diffs.
+
 Use it carefully:
 
 - Review prompts, summaries, logs, and diffs.
 - Keep secrets out of task specs, notes, and attached context.
+- Sanitize local artifacts before sharing them in public issues.
 - Treat runner command templates as trusted code.
 - Prefer isolated test repositories while validating setup.
 - Keep destructive actions explicit.

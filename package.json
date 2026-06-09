@@ -206,7 +206,7 @@
         "agenticKanbasutra.runners.github.defaultModel": {
           "type": "string",
           "default": "auto",
-          "description": "Default model for GitHub Copilot runners. Use auto to inherit the provider default, or set a model id such as gpt-5.3-codex."
+          "description": "Default model for GitHub Copilot runners. Use auto to inherit the provider default, or set a model id exposed by your Copilot organization."
         },
         "agenticKanbasutra.runners.github.modelOptions": {
           "type": "array",
@@ -303,7 +303,7 @@
         "agenticKanbasutra.runners.codex.defaultModel": {
           "type": "string",
           "default": "auto",
-          "description": "Default model for Codex runners. Use auto to inherit the Codex configured model, or set a model id such as gpt-5.5."
+          "description": "Default model for Codex runners. Use auto to inherit the Codex configured model, or set a model id available in the current Codex installation."
         },
         "agenticKanbasutra.runners.codex.modelOptions": {
           "type": "array",
@@ -349,7 +349,7 @@
         "agenticKanbasutra.runners.claude.defaultModel": {
           "type": "string",
           "default": "auto",
-          "description": "Default model for Claude CLI tasks. Use auto to inherit Claude Code /model default, currently expected as claude-sonnet-4-6, or set a model id such as claude-opus-4-8."
+          "description": "Default model for Claude CLI tasks. Use auto to inherit the Claude Code default, use an alias such as sonnet or opus, or set a full model id supported by your Claude Code configuration."
         },
         "agenticKanbasutra.runners.claude.modelOptions": {
           "type": "array",
@@ -357,7 +357,7 @@
           "items": {
             "type": "string"
           },
-          "description": "Additional Claude model IDs or aliases shown in the task editor. Built-in choices include Claude Opus 4.8, Opus 4.7, Opus 4.6, Sonnet 4.6, and Haiku 4.5."
+          "description": "Additional Claude model IDs or aliases shown in the task editor."
         },
         "agenticKanbasutra.runners.claude.profileOptions": {
           "type": "array",
