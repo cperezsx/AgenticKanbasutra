@@ -5,6 +5,7 @@
 .tmp-*
 node_modules/**
 docs/**
+website/**
 .alpackages/**
 coverage/**
 src/**

@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="AgenticKanbasutra is a preview VS Code extension for planning, queueing, running, and reviewing coding-agent tasks."
+    />
+    <title>AgenticKanbasutra</title>
+    <link rel="icon" href="../media/icon.png" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="AgenticKanbasutra home">
+        <img src="../media/icon.png" alt="" />
+        <span>AgenticKanbasutra</span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="#workflow">Workflow</a>
+        <a href="#runners">Runners</a>
+        <a href="#safety">Safety</a>
+        <a href="https://github.com/cperezsx/AgenticKanbasutra">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-grid" aria-hidden="true">
+          <div class="lane lane-pending">
+            <span>Pending</span>
+            <b>Refactor queue review</b>
+            <b>Document runner setup</b>
+          </div>
+          <div class="lane lane-queued">
+            <span>Queued</span>
+            <b>Manual QA pass</b>
+            <b>Package preview VSIX</b>
+          </div>
+          <div class="lane lane-execution">
+            <span>Execution</span>
+            <b>Codex CLI attempt</b>
+          </div>
+          <div class="lane lane-done">
+            <span>Done</span>
+            <b>Capture artifacts</b>
+            <b>Review diff summary</b>
+          </div>
+        </div>
+
+        <div class="hero-content">
+          <p class="eyebrow">Preview VS Code Extension</p>
+          <h1 id="hero-title">AgenticKanbasutra</h1>
+          <p class="hero-copy">
+            Plan, queue, run, and review coding-agent tasks across local Git repositories with visible status,
+            runner configuration, artifacts, and failure recovery.
+          </p>
+          <div class="actions" aria-label="Project actions">
+            <a class="button primary" href="https://github.com/cperezsx/AgenticKanbasutra">View on GitHub</a>
+            <a class="button" href="https://github.com/cperezsx/AgenticKanbasutra/issues">Report an Issue</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="workflow" class="band">
+        <div class="section-head">
+          <p class="eyebrow">Workflow</p>
+          <h2>Keep agent work visible from idea to review.</h2>
+        </div>
+        <ol class="steps">
+          <li><span>01</span><strong>Create</strong><p>Define repository, branch, runner, model, permissions, priority, and context.</p></li>
+          <li><span>02</span><strong>Queue</strong><p>Run tasks manually or let automatic mode respect your concurrency limit.</p></li>
+          <li><span>03</span><strong>Execute</strong><p>Dispatch manual handoffs, generic CLI commands, Copilot, Claude, or Codex runners.</p></li>
+          <li><span>04</span><strong>Review</strong><p>Inspect summaries, logs, prompts, changed files, diffs, and failed-task details.</p></li>
+        </ol>
+      </section>
+
+      <section id="runners" class="band muted">
+        <div class="section-head">
+          <p class="eyebrow">Runners</p>
+          <h2>Use the right execution path for each task.</h2>
+        </div>
+        <div class="runner-grid">
+          <article><strong>manual</strong><p>Safe handoff for interactive tools and preview validation.</p></article>
+          <article><strong>generic-cli</strong><p>Custom local automation through a configurable command template.</p></article>
+          <article><strong>copilot-cli</strong><p>Local GitHub Copilot CLI attempts with captured output.</p></article>
+          <article><strong>claude-cli</strong><p>Local Claude Code CLI execution with configurable permission arguments.</p></article>
+          <article><strong>codex-cli</strong><p>Local Codex CLI execution with sandbox-aware permission mapping.</p></article>
+          <article><strong>cloud handoffs</strong><p>Preview dispatch paths for hosted provider workflows.</p></article>
+        </div>
+      </section>
+
+      <section id="safety" class="band safety">
+        <div class="section-head">
+          <p class="eyebrow">Safety</p>
+          <h2>Designed for review, not blind automation.</h2>
+        </div>
+        <div class="safety-layout">
+          <p>
+            AgenticKanbasutra can launch local commands and provider CLIs. Keep secrets out of task specs,
+            prefer worktree isolation for write-capable runs, and review generated changes before accepting them.
+          </p>
+          <ul>
+            <li>Explicit permission profiles</li>
+            <li>Manual and automatic queue modes</li>
+            <li>Prompt, stdout, stderr, summary, and diff artifacts</li>
+            <li>Failed-task visibility and quick requeue workflows</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>Built by <a href="https://github.com/cperezsx">Carlos Perez</a></span>
+      <span><a href="https://www.linkedin.com/in/cperezsx/">LinkedIn</a></span>
+      <span><a href="https://github.com/cperezsx/AgenticKanbasutra/blob/main/LICENSE">MIT License</a></span>
+    </footer>
+  </body>
+</html>
