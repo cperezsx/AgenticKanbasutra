@@ -1,0 +1,75 @@
+name: Publish Marketplace
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_version:
+        description: "Optional package.json version to verify before publishing, for example 0.0.2"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: marketplace-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish VS Code extension
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Read package version
+        id: package
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Verify requested version
+        if: ${{ inputs.expected_version != '' }}
+        run: |
+          if [ "${{ inputs.expected_version }}" != "${{ steps.package.outputs.version }}" ]; then
+            echo "::error::Expected version ${{ inputs.expected_version }}, but package.json is ${{ steps.package.outputs.version }}"
+            exit 1
+          fi
+
+      - name: Verify Marketplace token
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          if [ -z "$VSCE_PAT" ]; then
+            echo "::error::Missing repository secret VSCE_PAT. Create an Azure DevOps Marketplace token with Marketplace Manage scope and save it as VSCE_PAT."
+            exit 1
+          fi
+
+      - name: Run checks
+        run: npm run check
+
+      - name: Package extension
+        run: npm run package
+
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: agentickanbasutra-${{ steps.package.outputs.version }}-vsix
+          path: agentickanbasutra-${{ steps.package.outputs.version }}.vsix
+          if-no-files-found: error
+
+      - name: Publish to Visual Studio Marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: npx vsce publish --packagePath agentickanbasutra-${{ steps.package.outputs.version }}.vsix

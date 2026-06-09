@@ -153,6 +153,10 @@ textarea {
   background: #04120d;
 }
 
+.section-head-collapsible {
+  padding: 0;
+}
+
 .section-head h2 {
   margin: 0;
   color: var(--ak-amber);
@@ -165,6 +169,71 @@ textarea {
   color: var(--ak-muted);
   font-size: 10px;
   text-transform: uppercase;
+}
+
+.collapse-toggle {
+  display: grid;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.collapse-toggle:focus-visible {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: -2px;
+}
+
+.collapse-chevron {
+  display: inline-grid;
+  place-items: center;
+  width: 14px;
+  color: var(--ak-cyan);
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 10px;
+  line-height: 1;
+}
+
+.section-toggle {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 7px;
+  min-height: 34px;
+  padding: 8px;
+  text-align: left;
+}
+
+.section-toggle:hover {
+  background: color-mix(in srgb, var(--ak-green) 7%, transparent);
+}
+
+.section-title {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ak-amber);
+  font-size: 11px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.section-meta {
+  color: var(--ak-muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.section-head .collapse-chevron,
+.task-group-head .collapse-chevron {
+  color: var(--ak-cyan);
+}
+
+.collapsible-section.is-collapsed {
+  background: color-mix(in srgb, var(--ak-panel) 82%, transparent);
 }
 
 .summary-list {
@@ -436,16 +505,28 @@ textarea {
   gap: 6px;
 }
 
+.task-group.is-collapsed {
+  gap: 0;
+}
+
 .task-group-head {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 8px;
   min-height: 24px;
   border: 1px solid color-mix(in srgb, var(--ak-line) 70%, transparent);
   border-radius: 6px;
-  padding: 4px 7px;
   background: color-mix(in srgb, var(--ak-panel) 68%, transparent);
+  overflow: hidden;
+}
+
+.task-group-toggle {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 7px;
+  min-height: 24px;
+  padding: 4px 7px;
+  text-align: left;
+}
+
+.task-group-toggle:hover {
+  background: color-mix(in srgb, var(--ak-cyan) 7%, transparent);
 }
 
 .task-group-head strong {
