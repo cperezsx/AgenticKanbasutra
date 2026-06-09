@@ -1310,12 +1310,12 @@ function runnerConfigurationFor(
   if (id.startsWith('claude')) {
     const models = withConfiguredDefaultModel(
         dedupeOptions([
-          { id: 'provider-default', label: 'Auto / Claude default', description: 'Let Claude Code use /model default. Claude Sonnet 4.6 is the expected default unless your Claude configuration overrides it.' },
-          { id: 'claude-opus-4-8', label: 'Claude Opus 4.8', description: '1M context. Reference pricing: $5.00 input / $25.00 output per 1M tokens.' },
-          { id: 'claude-opus-4-7', label: 'Claude Opus 4.7', description: '1M context. Reference pricing: $5.00 input / $25.00 output per 1M tokens.' },
-          { id: 'claude-opus-4-6', label: 'Claude Opus 4.6', description: '1M context. Reference pricing: $5.00 input / $25.00 output per 1M tokens.' },
-          { id: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6', description: '1M context. Reference pricing: $3.00 input / $15.00 output per 1M tokens.' },
-          { id: 'claude-haiku-4-5', label: 'Claude Haiku 4.5', description: '200K context. Reference pricing: $0.80 input / $4.00 output per 1M tokens.' },
+          { id: 'provider-default', label: 'Auto / Claude default', description: 'Let Claude Code use the configured default model.' },
+          { id: 'claude-opus-4-8', label: 'Claude Opus 4.8', description: 'Use when supported by the current Claude Code configuration.' },
+          { id: 'claude-opus-4-7', label: 'Claude Opus 4.7', description: 'Use when supported by the current Claude Code configuration.' },
+          { id: 'claude-opus-4-6', label: 'Claude Opus 4.6', description: 'Use when supported by the current Claude Code configuration.' },
+          { id: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6', description: 'Use when supported by the current Claude Code configuration.' },
+          { id: 'claude-haiku-4-5', label: 'Claude Haiku 4.5', description: 'Use when supported by the current Claude Code configuration.' },
           { id: 'sonnet', label: 'Sonnet alias', description: 'Use the current Claude Code Sonnet alias.' },
           { id: 'opus', label: 'Opus alias', description: 'Use the current Claude Code Opus alias.' },
           ...discovery.claudeModels
