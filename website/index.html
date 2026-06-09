@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="AgenticKanbasutra is a preview VS Code extension for planning, queueing, running, and reviewing coding-agent tasks."
+      content="AgenticKanbasutra is a preview VS Code extension for planning, queueing, running, and reviewing coding-agent tasks across local Git repositories."
     />
     <title>AgenticKanbasutra</title>
     <link rel="icon" href="./assets/icon.png" />
@@ -18,6 +18,7 @@
         <span>AgenticKanbasutra</span>
       </a>
       <nav aria-label="Primary navigation">
+        <a href="#screenshots">Screenshots</a>
         <a href="#workflow">Workflow</a>
         <a href="#runners">Runners</a>
         <a href="#safety">Safety</a>
@@ -27,86 +28,166 @@
 
     <main id="top">
       <section class="hero" aria-labelledby="hero-title">
-        <div class="hero-grid" aria-hidden="true">
-          <div class="lane lane-pending">
-            <span>Pending</span>
-            <b>Refactor queue review</b>
-            <b>Document runner setup</b>
-          </div>
-          <div class="lane lane-queued">
-            <span>Queued</span>
-            <b>Manual QA pass</b>
-            <b>Package preview VSIX</b>
-          </div>
-          <div class="lane lane-execution">
-            <span>Execution</span>
-            <b>Codex CLI attempt</b>
-          </div>
-          <div class="lane lane-done">
-            <span>Done</span>
-            <b>Capture artifacts</b>
-            <b>Review diff summary</b>
-          </div>
-        </div>
-
-        <div class="hero-content">
+        <div class="hero-copy">
           <p class="eyebrow">Preview VS Code Extension</p>
-          <h1 id="hero-title">AgenticKanbasutra</h1>
-          <p class="hero-copy">
-            Plan, queue, run, and review coding-agent tasks across local Git repositories with visible status,
-            runner configuration, artifacts, and failure recovery.
+          <h1 id="hero-title"><span>Agentic</span><span>Kanbasutra</span></h1>
+          <p class="lede">
+            A local command center for turning coding-agent work into planned, queued, executable,
+            and reviewable tasks.
           </p>
           <div class="actions" aria-label="Project actions">
-            <a class="button primary" href="https://github.com/cperezsx/AgenticKanbasutra">View on GitHub</a>
-            <a class="button" href="https://github.com/cperezsx/AgenticKanbasutra/issues">Report an Issue</a>
+            <a class="button primary" href="https://marketplace.visualstudio.com/items?itemName=cperezsx.agentickanbasutra">Open in Marketplace</a>
+            <a class="button" href="https://github.com/cperezsx/AgenticKanbasutra">View source</a>
           </div>
+        </div>
+        <figure class="hero-shot">
+          <img
+            src="./assets/screenshots/01-board-overview.png"
+            alt="AgenticKanbasutra task board running inside a VS Code WebView"
+          />
+        </figure>
+      </section>
+
+      <section class="intro band">
+        <div class="section-kicker">
+          <p class="eyebrow">Why it exists</p>
+          <h2>Agent prompts should not disappear into chat history.</h2>
+        </div>
+        <div class="intro-copy">
+          <p>
+            AgenticKanbasutra keeps each task attached to the repository, branch, runner, permissions,
+            context, output, artifacts, and final review state. It is built for developers who want
+            agent automation without losing visibility or accountability.
+          </p>
+          <ul class="signal-list">
+            <li>Manual and automatic queue execution</li>
+            <li>Repository and runner grouping for busy boards</li>
+            <li>Prompt, stdout, stderr, summary, diff, and changed-file artifacts</li>
+            <li>Failed-task review with quick requeue paths</li>
+          </ul>
         </div>
       </section>
 
-      <section id="workflow" class="band">
+      <section id="screenshots" class="band screenshots">
+        <div class="section-head">
+          <p class="eyebrow">Inside VS Code</p>
+          <h2>The extension uses a focused WebView, not an external dashboard.</h2>
+        </div>
+        <div class="shot-grid">
+          <figure>
+            <img src="./assets/screenshots/01-board-overview.png" alt="Task board grouped by workflow status" />
+            <figcaption>
+              <strong>Task board</strong>
+              <span>Pending, Queued, Execution, Failed, and Done stay visible in one place.</span>
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="./assets/screenshots/02-new-task-composer.png" alt="New task composer with repository and runner settings" />
+            <figcaption>
+              <strong>Task composer</strong>
+              <span>Define repository, branch, runner, model, permissions, priority, and attached context.</span>
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="./assets/screenshots/03-task-review-artifacts.png" alt="Task detail drawer with summary and artifacts" />
+            <figcaption>
+              <strong>Review drawer</strong>
+              <span>Inspect summaries, changed files, logs, prompts, and failure details after each run.</span>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section id="workflow" class="band workflow">
         <div class="section-head">
           <p class="eyebrow">Workflow</p>
-          <h2>Keep agent work visible from idea to review.</h2>
+          <h2>From idea to reviewed output.</h2>
         </div>
         <ol class="steps">
-          <li><span>01</span><strong>Create</strong><p>Define repository, branch, runner, model, permissions, priority, and context.</p></li>
-          <li><span>02</span><strong>Queue</strong><p>Run tasks manually or let automatic mode respect your concurrency limit.</p></li>
-          <li><span>03</span><strong>Execute</strong><p>Dispatch manual handoffs, generic CLI commands, Copilot, Claude, or Codex runners.</p></li>
-          <li><span>04</span><strong>Review</strong><p>Inspect summaries, logs, prompts, changed files, diffs, and failed-task details.</p></li>
+          <li>
+            <span>01</span>
+            <strong>Create</strong>
+            <p>Write the spec, attach only useful context, and select the repository, branch, runner, model, tools, permissions, and priority.</p>
+          </li>
+          <li>
+            <span>02</span>
+            <strong>Queue</strong>
+            <p>Keep execution manual, or switch to automatic mode with a configured concurrency limit.</p>
+          </li>
+          <li>
+            <span>03</span>
+            <strong>Execute</strong>
+            <p>Run local provider CLIs, generic commands, or manual handoffs while respecting the selected repository boundary.</p>
+          </li>
+          <li>
+            <span>04</span>
+            <strong>Review</strong>
+            <p>Move successful runs to Done, inspect failures, and requeue only when the cause has been understood.</p>
+          </li>
         </ol>
       </section>
 
-      <section id="runners" class="band muted">
+      <section id="runners" class="band runners">
         <div class="section-head">
           <p class="eyebrow">Runners</p>
-          <h2>Use the right execution path for each task.</h2>
+          <h2>Choose the safest execution path for each task.</h2>
         </div>
-        <div class="runner-grid">
-          <article><strong>manual</strong><p>Safe handoff for interactive tools and preview validation.</p></article>
-          <article><strong>generic-cli</strong><p>Custom local automation through a configurable command template.</p></article>
-          <article><strong>copilot-cli</strong><p>Local GitHub Copilot CLI attempts with captured output.</p></article>
-          <article><strong>claude-cli</strong><p>Local Claude Code CLI execution with configurable permission arguments.</p></article>
-          <article><strong>codex-cli</strong><p>Local Codex CLI execution with sandbox-aware permission mapping.</p></article>
-          <article><strong>cloud handoffs</strong><p>Preview dispatch paths for hosted provider workflows.</p></article>
+        <div class="runner-table" role="table" aria-label="Supported runners">
+          <div role="row">
+            <strong role="cell">manual</strong>
+            <span role="cell">Prompt package plus human-provided output. Best for testing and interactive tools.</span>
+          </div>
+          <div role="row">
+            <strong role="cell">generic-cli</strong>
+            <span role="cell">A configurable local command template for trusted automation.</span>
+          </div>
+          <div role="row">
+            <strong role="cell">copilot-cli</strong>
+            <span role="cell">Local GitHub Copilot CLI attempts with captured output and permission arguments.</span>
+          </div>
+          <div role="row">
+            <strong role="cell">claude-cli</strong>
+            <span role="cell">Local Claude Code CLI execution in non-interactive mode.</span>
+          </div>
+          <div role="row">
+            <strong role="cell">codex-cli</strong>
+            <span role="cell">Local Codex CLI execution with sandbox-aware permission mapping.</span>
+          </div>
+          <div role="row">
+            <strong role="cell">cloud handoffs</strong>
+            <span role="cell">Preview dispatch paths for provider-hosted workflows that will mature over time.</span>
+          </div>
         </div>
       </section>
 
       <section id="safety" class="band safety">
         <div class="section-head">
           <p class="eyebrow">Safety</p>
-          <h2>Designed for review, not blind automation.</h2>
+          <h2>Orchestration does not remove responsibility.</h2>
         </div>
         <div class="safety-layout">
           <p>
-            AgenticKanbasutra can launch local commands and provider CLIs. Keep secrets out of task specs,
-            prefer worktree isolation for write-capable runs, and review generated changes before accepting them.
+            AgenticKanbasutra can launch local commands and provider CLIs that may edit files,
+            create branches, commit, push, or consume paid provider resources. Review what is
+            generated before accepting it.
           </p>
-          <ul>
-            <li>Explicit permission profiles</li>
-            <li>Manual and automatic queue modes</li>
-            <li>Prompt, stdout, stderr, summary, and diff artifacts</li>
-            <li>Failed-task visibility and quick requeue workflows</li>
+          <ul class="signal-list">
+            <li>Keep secrets out of specs and attached context</li>
+            <li>Prefer worktree isolation for write-capable runs</li>
+            <li>Treat command templates as trusted code</li>
+            <li>Use bypass permissions only when explicitly needed</li>
           </ul>
+        </div>
+      </section>
+
+      <section class="band cta">
+        <div>
+          <p class="eyebrow">Preview</p>
+          <h2>Try it with a harmless repository first.</h2>
+        </div>
+        <div class="cta-actions">
+          <a class="button primary" href="https://marketplace.visualstudio.com/items?itemName=cperezsx.agentickanbasutra">Install preview</a>
+          <a class="button" href="https://github.com/cperezsx/AgenticKanbasutra/issues/new/choose">Open an issue</a>
         </div>
       </section>
     </main>
@@ -114,6 +195,7 @@
     <footer class="site-footer">
       <span>Built by <a href="https://github.com/cperezsx">Carlos Perez</a></span>
       <span><a href="https://www.linkedin.com/in/cperezsx/">LinkedIn</a></span>
+      <span><a href="https://github.com/cperezsx/AgenticKanbasutra/blob/main/DISCLAIMER.md">Disclaimer</a></span>
       <span><a href="https://github.com/cperezsx/AgenticKanbasutra/blob/main/LICENSE">MIT License</a></span>
     </footer>
   </body>

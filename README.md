@@ -20,6 +20,7 @@ It is designed for individual developers who want a safer command center for Cop
 ## Contents
 
 - [Why Use It](#why-use-it)
+- [Screenshots](#screenshots)
 - [Workflow](#workflow)
 - [Task Board](#task-board)
 - [Runners](#runners)
@@ -44,6 +45,14 @@ It is designed for individual developers who want a safer command center for Cop
 - Review generated work before accepting, merging, or publishing anything.
 
 AgenticKanbasutra is not a replacement for code review, Git discipline, or human judgment. It orchestrates tools; you decide what is safe to run and what is safe to keep.
+
+## Screenshots
+
+![AgenticKanbasutra task board](https://raw.githubusercontent.com/cperezsx/AgenticKanbasutra/main/media/screenshots/01-board-overview.png)
+
+![New task composer](https://raw.githubusercontent.com/cperezsx/AgenticKanbasutra/main/media/screenshots/02-new-task-composer.png)
+
+![Task review and artifacts](https://raw.githubusercontent.com/cperezsx/AgenticKanbasutra/main/media/screenshots/03-task-review-artifacts.png)
 
 ## Workflow
 
