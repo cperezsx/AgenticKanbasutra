@@ -1,0 +1,44 @@
+name: Feature request
+description: Suggest an improvement for workflow, runners, UI, Marketplace, or documentation.
+title: "[Feature] "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or workflow gap
+      description: What are you trying to do, and what currently gets in the way?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the behavior you would like to see.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Board UI
+        - Task creation
+        - Queue execution
+        - Manual handoff
+        - Generic CLI
+        - Copilot runner
+        - Claude runner
+        - Codex runner
+        - Worktree/review
+        - Marketplace/release
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Optional, but useful for larger workflow changes.

@@ -1,0 +1,92 @@
+name: Runner failure
+description: Report a failed Copilot, Claude, Codex, manual, or generic CLI task.
+title: "[Runner] "
+labels:
+  - runner
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Runner failures often involve local tools, provider authentication, permissions, quota, or repository state. Please sanitize all logs before posting.
+  - type: dropdown
+    id: runner
+    attributes:
+      label: Runner
+      options:
+        - manual
+        - generic-cli
+        - copilot-cli
+        - copilot-cloud
+        - claude-cli
+        - codex-cli
+        - codex-cloud
+        - codex-manual
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: cli-version
+    attributes:
+      label: Provider CLI version
+      description: For example, output from `codex --version`, `claude --version`, `gh --version`, or your Copilot CLI version command.
+  - type: dropdown
+    id: setup-check
+    attributes:
+      label: Does the setup check pass?
+      options:
+        - "Yes"
+        - "No"
+        - Not applicable
+        - Not checked
+    validations:
+      required: true
+  - type: dropdown
+    id: queue-mode
+    attributes:
+      label: Queue mode
+      options:
+        - manual
+        - automatic
+    validations:
+      required: true
+  - type: dropdown
+    id: permission-profile
+    attributes:
+      label: Permission profile
+      options:
+        - read_only
+        - ask
+        - allow_workspace
+        - allow_worktree
+        - bypass
+    validations:
+      required: true
+  - type: dropdown
+    id: isolation-mode
+    attributes:
+      label: Isolation mode
+      options:
+        - none
+        - workspace
+        - worktree
+    validations:
+      required: true
+  - type: textarea
+    id: task-shape
+    attributes:
+      label: Task shape
+      description: Mention whether the task used branch, commit, push, worktree, shell, MCP/tools, or cloud dispatch behavior.
+  - type: textarea
+    id: failure-output
+    attributes:
+      label: Failure output
+      description: Paste sanitized stdout/stderr, exit code, or the failed-task summary.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true

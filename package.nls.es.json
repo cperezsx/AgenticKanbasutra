@@ -1,0 +1,14 @@
+{
+  "agenticKanbasutra.container.title": "AgenticKanbasutra",
+  "agenticKanbasutra.board.name": "Kanban",
+  "agenticKanbasutra.command.open": "Abrir AgenticKanbasutra",
+  "agenticKanbasutra.command.newTask": "Nueva tarea",
+  "agenticKanbasutra.command.runNext": "Ejecutar siguiente tarea",
+  "agenticKanbasutra.command.cleanupCompleted": "Limpiar tareas finalizadas",
+  "agenticKanbasutra.command.checkCopilot": "Comprobar configuracion de Copilot",
+  "agenticKanbasutra.command.checkCodex": "Comprobar configuracion de Codex",
+  "agenticKanbasutra.command.checkClaude": "Comprobar configuracion de Claude",
+  "agenticKanbasutra.command.statusBarActions": "Mostrar acciones de estado de AgenticKanbasutra",
+  "agenticKanbasutra.command.toggleQueue": "Alternar cola de AgenticKanbasutra",
+  "agenticKanbasutra.command.openSettings": "Abrir configuracion de AgenticKanbasutra"
+}

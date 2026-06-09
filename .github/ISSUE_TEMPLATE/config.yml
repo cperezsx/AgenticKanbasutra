@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/cperezsx/AgenticKanbasutra/security/advisories/new
+    about: Please do not report vulnerabilities in public issues.
+  - name: Support guide
+    url: https://github.com/cperezsx/AgenticKanbasutra/blob/main/SUPPORT.md
+    about: Read what to include before opening a support issue.

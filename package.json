@@ -1,0 +1,462 @@
+{
+  "name": "agentickanbasutra",
+  "displayName": "AgenticKanbasutra",
+  "description": "A personal VS Code workbench for planning, running, and reviewing coding-agent attempts.",
+  "version": "0.0.1",
+  "publisher": "cperezsx",
+  "license": "SEE LICENSE IN LICENSE",
+  "preview": true,
+  "pricing": "Free",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cperezsx/AgenticKanbasutra.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cperezsx/AgenticKanbasutra/issues"
+  },
+  "homepage": "https://github.com/cperezsx/AgenticKanbasutra#readme",
+  "galleryBanner": {
+    "color": "#03100b",
+    "theme": "dark"
+  },
+  "qna": "marketplace",
+  "engines": {
+    "vscode": "^1.92.0"
+  },
+  "categories": [
+    "Other",
+    "AI"
+  ],
+  "keywords": [
+    "ai",
+    "agents",
+    "kanban",
+    "copilot",
+    "codex",
+    "claude"
+  ],
+  "activationEvents": [
+    "onView:agenticKanbasutra.board",
+    "onCommand:agenticKanbasutra.open",
+    "onCommand:agenticKanbasutra.newTask",
+    "onCommand:agenticKanbasutra.runNext",
+    "onCommand:agenticKanbasutra.cleanupCompleted",
+    "onCommand:agenticKanbasutra.checkCopilot",
+    "onCommand:agenticKanbasutra.checkCodex",
+    "onCommand:agenticKanbasutra.checkClaude",
+    "onCommand:agenticKanbasutra.statusBarActions",
+    "onCommand:agenticKanbasutra.toggleQueue",
+    "onCommand:agenticKanbasutra.openSettings"
+  ],
+  "main": "./out/extension.js",
+  "icon": "media/icon.png",
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "check": "tsc -p ./ --noEmit",
+    "vscode:prepublish": "npm run compile",
+    "package": "vsce package",
+    "publish:marketplace": "vsce publish"
+  },
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "agenticKanbasutra",
+          "title": "%agenticKanbasutra.container.title%",
+          "icon": "media/activity-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "agenticKanbasutra": [
+        {
+          "id": "agenticKanbasutra.board",
+          "name": "%agenticKanbasutra.board.name%",
+          "type": "webview",
+          "icon": "media/activity-icon.svg"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "agenticKanbasutra.open",
+        "title": "%agenticKanbasutra.command.open%",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "agenticKanbasutra.newTask",
+        "title": "%agenticKanbasutra.command.newTask%",
+        "icon": "$(add)"
+      },
+      {
+        "command": "agenticKanbasutra.runNext",
+        "title": "%agenticKanbasutra.command.runNext%",
+        "icon": "$(play)"
+      },
+      {
+        "command": "agenticKanbasutra.cleanupCompleted",
+        "title": "%agenticKanbasutra.command.cleanupCompleted%",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "agenticKanbasutra.checkCopilot",
+        "title": "%agenticKanbasutra.command.checkCopilot%",
+        "icon": "$(shield)"
+      },
+      {
+        "command": "agenticKanbasutra.checkCodex",
+        "title": "%agenticKanbasutra.command.checkCodex%",
+        "icon": "$(hubot)"
+      },
+      {
+        "command": "agenticKanbasutra.checkClaude",
+        "title": "%agenticKanbasutra.command.checkClaude%",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "agenticKanbasutra.statusBarActions",
+        "title": "%agenticKanbasutra.command.statusBarActions%"
+      },
+      {
+        "command": "agenticKanbasutra.toggleQueue",
+        "title": "%agenticKanbasutra.command.toggleQueue%",
+        "icon": "$(debug-pause)"
+      },
+      {
+        "command": "agenticKanbasutra.openSettings",
+        "title": "%agenticKanbasutra.command.openSettings%",
+        "icon": "$(settings-gear)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "agenticKanbasutra.open",
+          "when": "view == agenticKanbasutra.board",
+          "group": "navigation@1"
+        },
+        {
+          "command": "agenticKanbasutra.newTask",
+          "when": "view == agenticKanbasutra.board",
+          "group": "navigation@2"
+        },
+        {
+          "command": "agenticKanbasutra.openSettings",
+          "when": "view == agenticKanbasutra.board",
+          "group": "navigation@3"
+        },
+        {
+          "command": "agenticKanbasutra.checkCopilot",
+          "when": "view == agenticKanbasutra.board",
+          "group": "navigation@4"
+        },
+        {
+          "command": "agenticKanbasutra.checkCodex",
+          "when": "view == agenticKanbasutra.board",
+          "group": "navigation@5"
+        },
+        {
+          "command": "agenticKanbasutra.checkClaude",
+          "when": "view == agenticKanbasutra.board",
+          "group": "navigation@6"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "AgenticKanbasutra",
+      "properties": {
+        "agenticKanbasutra.completed.visible": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show completed tasks in the Kanban board."
+        },
+        "agenticKanbasutra.completed.autoDelete.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically delete completed task records after a retention period."
+        },
+        "agenticKanbasutra.completed.autoDelete.afterDays": {
+          "type": "number",
+          "default": 14,
+          "minimum": 1,
+          "description": "Number of days to keep completed task records when automatic cleanup is enabled."
+        },
+        "agenticKanbasutra.completed.keepFailed": {
+          "type": "boolean",
+          "default": true,
+          "description": "Keep failed tasks even when automatic completed-task cleanup is enabled."
+        },
+        "agenticKanbasutra.artifacts.maxLogBytes": {
+          "type": "number",
+          "default": 200000,
+          "minimum": 10000,
+          "description": "Maximum stdout or stderr bytes stored per run artifact."
+        },
+        "agenticKanbasutra.runners.genericCli.commandTemplate": {
+          "type": "string",
+          "default": "echo Running AgenticKanbasutra task && type \"${promptFile}\"",
+          "description": "Shell command template used by the generic CLI runner. Available variables: ${promptFile}, ${repositoryPath}, ${taskTitle}."
+        },
+        "agenticKanbasutra.runners.copilotCli.executable": {
+          "type": "string",
+          "default": "copilot",
+          "description": "Executable used for GitHub Copilot CLI sessions."
+        },
+        "agenticKanbasutra.runners.github.defaultModel": {
+          "type": "string",
+          "default": "auto",
+          "description": "Default model for GitHub Copilot runners. Use auto to inherit the provider default, or set a model id such as gpt-5.3-codex."
+        },
+        "agenticKanbasutra.runners.github.modelOptions": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional GitHub Copilot model IDs or labels shown in the task editor. Use this for organization-enabled models that are visible in Copilot but not discoverable from a public API."
+        },
+        "agenticKanbasutra.runners.github.agentOptions": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional GitHub Copilot agent IDs or chat modes shown in the task editor."
+        },
+        "agenticKanbasutra.runners.github.executable": {
+          "type": "string",
+          "default": "gh",
+          "description": "Executable used for GitHub CLI checks and Copilot Cloud authentication."
+        },
+        "agenticKanbasutra.runners.copilotCli.baseArgs": {
+          "type": "array",
+          "default": [
+            "--output-format",
+            "json",
+            "--stream",
+            "off",
+            "--no-color",
+            "--no-auto-update"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "Base arguments passed to GitHub Copilot CLI."
+        },
+        "agenticKanbasutra.runners.copilotCli.readOnlyArgs": {
+          "type": "array",
+          "default": [
+            "--available-tools=view,grep,glob",
+            "--deny-tool=write",
+            "--deny-tool=shell"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "Permission arguments used for Copilot CLI read-only tasks."
+        },
+        "agenticKanbasutra.runners.copilotCli.allowWorkspaceArgs": {
+          "type": "array",
+          "default": [
+            "--allow-tool=write",
+            "--allow-tool=shell(git:*)",
+            "--deny-tool=shell(git push)"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "Permission arguments used for Copilot CLI workspace tasks."
+        },
+        "agenticKanbasutra.runners.copilotCli.allowWorktreeArgs": {
+          "type": "array",
+          "default": [
+            "--allow-tool=write",
+            "--allow-tool=shell(git:*)",
+            "--deny-tool=shell(git push)"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "Permission arguments used for Copilot CLI worktree tasks."
+        },
+        "agenticKanbasutra.runners.copilotCli.bypassArgs": {
+          "type": "array",
+          "default": [
+            "--allow-all"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "Permission arguments used when a Copilot CLI task explicitly selects the bypass profile. The default maps to GitHub Copilot CLI's --allow-all behavior."
+        },
+        "agenticKanbasutra.runners.copilotCloud.createPullRequest": {
+          "type": "boolean",
+          "default": false,
+          "description": "Ask Copilot Cloud to create a pull request immediately when dispatching a cloud task."
+        },
+        "agenticKanbasutra.runners.codexCli.executable": {
+          "type": "string",
+          "default": "codex",
+          "description": "Executable used for Codex CLI sessions."
+        },
+        "agenticKanbasutra.runners.codex.defaultModel": {
+          "type": "string",
+          "default": "auto",
+          "description": "Default model for Codex runners. Use auto to inherit the Codex configured model, or set a model id such as gpt-5.5."
+        },
+        "agenticKanbasutra.runners.codex.modelOptions": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional Codex model IDs shown in the task editor."
+        },
+        "agenticKanbasutra.runners.codex.profileOptions": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional Codex profile IDs shown as agent/profile options. Profiles from CODEX_HOME/config.toml are also discovered automatically."
+        },
+        "agenticKanbasutra.runners.codexCli.baseArgs": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "description": "Base arguments passed to Codex CLI before the exec subcommand."
+        },
+        "agenticKanbasutra.runners.codexCloud.environmentId": {
+          "type": "string",
+          "default": "",
+          "description": "Codex Cloud environment ID used by the codex-cloud runner."
+        },
+        "agenticKanbasutra.runners.codexCloud.attempts": {
+          "type": "number",
+          "default": 1,
+          "minimum": 1,
+          "maximum": 4,
+          "description": "Number of assistant attempts requested for Codex Cloud tasks."
+        },
+        "agenticKanbasutra.runners.claudeCli.executable": {
+          "type": "string",
+          "default": "claude",
+          "description": "Executable used for Claude Code CLI sessions."
+        },
+        "agenticKanbasutra.runners.claude.defaultModel": {
+          "type": "string",
+          "default": "auto",
+          "description": "Default model for Claude CLI tasks. Use auto to inherit the Claude Code configured model, or set a model alias such as sonnet or opus."
+        },
+        "agenticKanbasutra.runners.claude.modelOptions": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional Claude model IDs or aliases shown in the task editor."
+        },
+        "agenticKanbasutra.runners.claude.profileOptions": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional Claude agent/profile labels shown in the task editor."
+        },
+        "agenticKanbasutra.runners.claudeCli.baseArgs": {
+          "type": "array",
+          "default": [
+            "--output-format",
+            "json"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "Base arguments passed to Claude Code CLI before the task prompt."
+        },
+        "agenticKanbasutra.runners.claudeCli.readOnlyArgs": {
+          "type": "array",
+          "default": [
+            "--permission-mode",
+            "plan"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "Permission arguments used for Claude CLI read-only tasks."
+        },
+        "agenticKanbasutra.runners.claudeCli.allowWorkspaceArgs": {
+          "type": "array",
+          "default": [
+            "--permission-mode",
+            "acceptEdits"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "Permission arguments used for Claude CLI workspace tasks."
+        },
+        "agenticKanbasutra.runners.claudeCli.allowWorktreeArgs": {
+          "type": "array",
+          "default": [
+            "--permission-mode",
+            "acceptEdits"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "Permission arguments used for Claude CLI worktree tasks."
+        },
+        "agenticKanbasutra.runners.claudeCli.bypassArgs": {
+          "type": "array",
+          "default": [
+            "--permission-mode",
+            "bypassPermissions"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "Permission arguments used when a Claude CLI task explicitly selects the bypass profile."
+        },
+        "agenticKanbasutra.runners.toolsProfileOptions": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional tool profile presets shown in the task editor. Examples: mcp:github, allow-tool:terminal, or a comma-separated allow-tool list."
+        },
+        "agenticKanbasutra.queue.executionMode": {
+          "type": "string",
+          "default": "manual",
+          "enum": [
+            "manual",
+            "automatic"
+          ],
+          "enumDescriptions": [
+            "Queued tasks only start when the user explicitly runs one or drags it into Execution.",
+            "Queued tasks start automatically up to the configured concurrency limit."
+          ],
+          "description": "Controls whether queued tasks are started manually by the user or automatically by AgenticKanbasutra."
+        },
+        "agenticKanbasutra.queue.maxConcurrent": {
+          "type": "number",
+          "default": 1,
+          "minimum": 1,
+          "maximum": 4,
+          "description": "Maximum number of queued tasks to execute concurrently."
+        }
+      }
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/vscode": "^1.92.0",
+    "@vscode/vsce": "^3.9.1",
+    "typescript": "^5.8.0"
+  }
+}

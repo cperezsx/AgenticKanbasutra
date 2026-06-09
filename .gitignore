@@ -1,0 +1,30 @@
+node_modules/
+out/
+dist/
+coverage/
+.vscode-test/
+
+# Local editor and machine files
+.vscode/
+.idea/
+.alpackages/
+.DS_Store
+Thumbs.db
+
+# Local documentation and release notes kept outside the public repo
+docs/
+
+# Local packages, logs, and temporary output
+*.vsix
+*.log
+*.tmp
+tmp/
+.tmp-*/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment and secret files
+.env
+.env.*
+!.env.example
