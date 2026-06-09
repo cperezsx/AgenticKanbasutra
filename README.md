@@ -9,6 +9,8 @@
 
 AgenticKanbasutra turns agent work into visible, repeatable tasks. Create a task with a repository, prompt, runner, model, permissions, branch, priority, and attached context; then move it through a focused Kanban workflow.
 
+Project site: https://cperezsx.github.io/AgenticKanbasutra/
+
 ```text
 PENDING -> QUEUED -> EXECUTION -> FAILED / DONE
 ```
@@ -184,6 +186,7 @@ You are responsible for the tasks you create, the runners you select, the permis
 - Use feature requests for workflow, runner, UI, and Marketplace improvements.
 - Do not open public issues for vulnerabilities or sensitive provider-token problems. Follow [SECURITY.md](SECURITY.md).
 - Include the runner, repository mode, permission profile, queue mode, relevant logs, and expected behavior when reporting a problem.
+- Visit the project site at https://cperezsx.github.io/AgenticKanbasutra/.
 
 ## Preview Status
 
