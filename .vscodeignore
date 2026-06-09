@@ -3,9 +3,11 @@
 .github/**
 .git/**
 .tmp-*
+.tmp-*/**
 node_modules/**
 docs/**
 website/**
+media/screenshots/**
 .alpackages/**
 coverage/**
 src/**
