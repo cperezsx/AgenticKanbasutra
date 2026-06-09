@@ -2,6 +2,17 @@
 
 All notable changes to AgenticKanbasutra will be documented in this file.
 
+## 0.0.2
+
+Focused preview update for denser boards and clearer Claude CLI model selection.
+
+- Added collapse and expand controls for Kanban groups when the board is grouped by repository or runner.
+- Added collapse and expand controls for the sidebar Summary, Configuration, and Recent work sections.
+- Persisted board grouping and collapse state inside the webview state so visual preferences survive rerenders.
+- Added explicit Claude CLI model choices in the New task composer: Claude Opus 4.8, Opus 4.7, Opus 4.6, Sonnet 4.6, and Haiku 4.5.
+- Kept `auto` available for Claude CLI so Claude Code can continue using `/model default`, expected as Claude Sonnet 4.6 unless the local Claude configuration overrides it.
+- Updated release documentation, Marketplace-facing copy, and manual QA checklist for the new compact navigation workflow.
+
 ## 0.0.1
 
 Initial MVP preview.

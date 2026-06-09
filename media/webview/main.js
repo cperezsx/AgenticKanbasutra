@@ -14,6 +14,8 @@
   let boardGroupMode = ['none', 'repository', 'runner'].includes(persistedState.boardGroupMode)
     ? persistedState.boardGroupMode
     : 'none';
+  let collapsedTaskGroups = normalizeCollapsedState(persistedState.collapsedTaskGroups);
+  let collapsedSidebarSections = normalizeCollapsedState(persistedState.collapsedSidebarSections);
 
   vscode.postMessage({ type: 'ready', payload: { mode: viewMode } });
 
@@ -108,13 +110,15 @@
 
   function renderSidebarSummary() {
     const groups = taskGroups();
-    const summary = el('section', 'sidebar-section');
-    summary.innerHTML = `
-      <div class="section-head">
-        <h2>${escapeHtml(t('summary'))}</h2>
-        <span>${escapeHtml(board.queuePaused ? t('queuePaused') : t('queueActive'))}</span>
-      </div>
-      <div class="summary-list">
+    const sectionId = 'summary';
+    const contentId = 'sidebar-summary-content';
+    const collapsed = isSidebarSectionCollapsed(sectionId);
+    const summary = el('section', `sidebar-section collapsible-section${collapsed ? ' is-collapsed' : ''}`);
+    summary.append(collapsibleSectionHead(t('summary'), board.queuePaused ? t('queuePaused') : t('queueActive'), collapsed, contentId, () => toggleSidebarSection(sectionId)));
+    if (!collapsed) {
+      const list = el('div', 'summary-list');
+      list.id = contentId;
+      list.innerHTML = `
         ${summaryRow(t('pending'), groups.pending.length, 'pending')}
         ${summaryRow(t('queued'), groups.queued.length, 'queued')}
         ${summaryRow(t('running'), groups.running.length, 'running')}
@@ -122,13 +126,21 @@
         ${summaryRow(t('completed'), groups.completed.length, 'completed')}
         ${summaryRow(t('queueMode'), queueModeLabel(), 'queue')}
         ${summaryRow(t('maxConcurrent'), String(board.queueMaxConcurrent || 1), 'queue')}
-      </div>
-    `;
+      `;
+      summary.append(list);
+    }
     return summary;
   }
 
   function renderSidebarActions() {
-    const actions = el('section', 'sidebar-section');
+    const sectionId = 'configuration';
+    const contentId = 'sidebar-configuration-content';
+    const collapsed = isSidebarSectionCollapsed(sectionId);
+    const actions = el('section', `sidebar-section collapsible-section${collapsed ? ' is-collapsed' : ''}`);
+    actions.append(collapsibleSectionHead(t('configuration'), '', collapsed, contentId, () => toggleSidebarSection(sectionId)));
+    if (collapsed) {
+      return actions;
+    }
     const primary = el('div', 'sidebar-actions primary-actions');
     primary.append(
       button(t('openBoard'), 'primary wide', () => post('openBoard')),
@@ -147,17 +159,28 @@
       button(t('cleanup'), 'danger wide', () => post('cleanupCompleted'))
     );
 
-    actions.innerHTML = `<div class="section-head"><h2>${escapeHtml(t('configuration'))}</h2></div>`;
-    actions.append(primary, config);
+    const content = el('div', 'sidebar-section-content');
+    content.id = contentId;
+    content.append(primary, config);
+    actions.append(content);
     return actions;
   }
 
   function renderSidebarRecent() {
     const recent = sortByActivity(board.tasks).slice(0, 5);
-    const section = el('section', 'sidebar-section recent-section');
-    section.innerHTML = `<div class="section-head"><h2>${escapeHtml(t('recentWork'))}</h2></div>`;
+    const sectionId = 'recentWork';
+    const contentId = 'sidebar-recent-work-content';
+    const collapsed = isSidebarSectionCollapsed(sectionId);
+    const section = el('section', `sidebar-section recent-section collapsible-section${collapsed ? ' is-collapsed' : ''}`);
+    section.append(collapsibleSectionHead(t('recentWork'), String(recent.length), collapsed, contentId, () => toggleSidebarSection(sectionId)));
+    if (collapsed) {
+      return section;
+    }
+    const content = el('div', 'sidebar-section-content');
+    content.id = contentId;
     if (recent.length === 0) {
-      section.append(el('div', 'empty compact', t('noTasks')));
+      content.append(el('div', 'empty compact', t('noTasks')));
+      section.append(content);
       return section;
     }
     const list = el('div', 'sidebar-task-list');
@@ -171,7 +194,8 @@
       `;
       list.append(row);
     }
-    section.append(list);
+    content.append(list);
+    section.append(content);
     return section;
   }
 
@@ -318,15 +342,16 @@
   }
 
   function renderTaskGroup(group, columnId) {
-    const section = el('section', 'task-group');
+    const collapsed = isTaskGroupCollapsed(columnId, group.key);
+    const contentId = `task-group-${slug(boardGroupMode)}-${slug(columnId)}-${slug(group.key)}`;
+    const section = el('section', `task-group${collapsed ? ' is-collapsed' : ''}`);
     section.dataset.groupKey = group.key;
-    section.innerHTML = `
-      <div class="task-group-head">
-        <strong>${escapeHtml(group.label)}</strong>
-        <span>${group.tasks.length}</span>
-      </div>
-    `;
+    section.append(collapsibleTaskGroupHead(group, columnId, collapsed, contentId));
+    if (collapsed) {
+      return section;
+    }
     const tasks = el('div', 'task-group-list');
+    tasks.id = contentId;
     for (const task of group.tasks) {
       tasks.append(renderTaskCard(task, columnId));
     }
@@ -1126,8 +1151,101 @@
 
   function setBoardGroupMode(mode) {
     boardGroupMode = ['repository', 'runner'].includes(mode) ? mode : 'none';
-    vscode.setState?.({ ...(vscode.getState?.() || {}), boardGroupMode });
+    persistViewState();
     render();
+  }
+
+  function persistViewState() {
+    vscode.setState?.({
+      ...(vscode.getState?.() || {}),
+      boardGroupMode,
+      collapsedTaskGroups,
+      collapsedSidebarSections
+    });
+  }
+
+  function normalizeCollapsedState(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return {};
+    }
+    return Object.fromEntries(Object.entries(value).filter(([key, collapsed]) => key && collapsed === true));
+  }
+
+  function isSidebarSectionCollapsed(sectionId) {
+    return collapsedSidebarSections[sectionId] === true;
+  }
+
+  function toggleSidebarSection(sectionId) {
+    collapsedSidebarSections = { ...collapsedSidebarSections };
+    if (collapsedSidebarSections[sectionId]) {
+      delete collapsedSidebarSections[sectionId];
+    } else {
+      collapsedSidebarSections[sectionId] = true;
+    }
+    persistViewState();
+    render();
+  }
+
+  function taskGroupCollapseKey(columnId, groupKey) {
+    return `${boardGroupMode}|${columnId}|${groupKey}`;
+  }
+
+  function isTaskGroupCollapsed(columnId, groupKey) {
+    return collapsedTaskGroups[taskGroupCollapseKey(columnId, groupKey)] === true;
+  }
+
+  function toggleTaskGroup(columnId, groupKey) {
+    const key = taskGroupCollapseKey(columnId, groupKey);
+    collapsedTaskGroups = { ...collapsedTaskGroups };
+    if (collapsedTaskGroups[key]) {
+      delete collapsedTaskGroups[key];
+    } else {
+      collapsedTaskGroups[key] = true;
+    }
+    persistViewState();
+    render();
+  }
+
+  function collapsibleSectionHead(label, meta, collapsed, contentId, onToggle) {
+    const head = el('div', 'section-head section-head-collapsible');
+    const toggle = el('button', 'collapse-toggle section-toggle');
+    toggle.type = 'button';
+    toggle.title = `${collapsed ? t('expand') : t('collapse')} ${label}`;
+    toggle.setAttribute('aria-label', toggle.title);
+    toggle.setAttribute('aria-expanded', String(!collapsed));
+    toggle.setAttribute('aria-controls', contentId);
+    toggle.innerHTML = `
+      <span class="collapse-chevron" aria-hidden="true">${collapsed ? '>' : 'v'}</span>
+      <span class="section-title">${escapeHtml(label)}</span>
+      ${meta ? `<span class="section-meta">${escapeHtml(meta)}</span>` : ''}
+    `;
+    toggle.addEventListener('click', (event) => {
+      event.stopPropagation();
+      onToggle();
+    });
+    head.append(toggle);
+    return head;
+  }
+
+  function collapsibleTaskGroupHead(group, columnId, collapsed, contentId) {
+    const head = el('div', 'task-group-head');
+    const toggle = el('button', 'collapse-toggle task-group-toggle');
+    toggle.type = 'button';
+    toggle.title = `${collapsed ? t('expand') : t('collapse')} ${group.label}`;
+    toggle.setAttribute('aria-label', toggle.title);
+    toggle.setAttribute('aria-expanded', String(!collapsed));
+    toggle.setAttribute('aria-controls', contentId);
+    toggle.innerHTML = `
+      <span class="collapse-chevron" aria-hidden="true">${collapsed ? '>' : 'v'}</span>
+      <strong>${escapeHtml(group.label)}</strong>
+      <span>${group.tasks.length}</span>
+    `;
+    toggle.addEventListener('click', (event) => {
+      event.stopPropagation();
+      toggleTaskGroup(columnId, group.key);
+    });
+    head.append(toggle);
+    return head;
   }
 
   function toggleCompletedVisibility() {

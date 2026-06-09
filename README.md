@@ -2,7 +2,7 @@
 
 > A preview VS Code extension for planning, queueing, running, and reviewing coding-agent tasks across local Git repositories.
 
-[![Version](https://img.shields.io/badge/version-0.0.1-68f0a7)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.0.2-68f0a7)](CHANGELOG.md)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.92-65d8e9)](https://code.visualstudio.com/)
 [![License](https://img.shields.io/badge/license-MIT-f3bb58)](LICENSE)
 [![Status](https://img.shields.io/badge/status-preview-c99cff)](#preview-status)
@@ -82,7 +82,7 @@ Drag and drop is intentionally limited:
 - Move `FAILED` tasks back to `PENDING` or `QUEUED`.
 - `EXECUTION` and `DONE` are locked to avoid accidental state changes.
 
-The board can also group tasks by repository or runner, which makes busy queues easier to scan without changing task status or execution order.
+The board can also group tasks by repository or runner, which makes busy queues easier to scan without changing task status or execution order. Group headers can be collapsed when you want a compact view of a busy board.
 
 ## Runners
 
@@ -92,7 +92,7 @@ The board can also group tasks by repository or runner, which makes busy queues 
 | `generic-cli` | Custom local automation. | Runs a configurable command template. |
 | `copilot-cli` | Local GitHub Copilot CLI execution. | Captures output and maps configured permission arguments. |
 | `copilot-cloud` | GitHub-hosted dispatch preview. | Dispatches work and waits for follow-up. Final sync is not implemented yet. |
-| `claude-cli` | Local Claude Code CLI execution. | Runs `claude -p` in non-interactive mode with configurable permission arguments. |
+| `claude-cli` | Local Claude Code CLI execution. | Runs `claude -p` in non-interactive mode with configurable permission arguments and explicit Claude model choices. |
 | `codex-cli` | Local Codex CLI execution. | Runs `codex exec --json` and maps permission profiles to Codex sandbox modes. |
 | `codex-cloud` | Codex Cloud dispatch preview. | Dispatches work through configured cloud settings. |
 | `codex-manual` | Interactive Codex handoff. | Opens/copies a structured prompt and waits for manual completion. |
@@ -169,6 +169,8 @@ Common settings:
 | `agenticKanbasutra.runners.genericCli.commandTemplate` | Command template for `generic-cli`. |
 | `agenticKanbasutra.runners.copilotCli.*` | Copilot CLI executable and permission arguments. |
 | `agenticKanbasutra.runners.claudeCli.*` | Claude CLI executable and permission arguments. |
+| `agenticKanbasutra.runners.claude.defaultModel` | Claude CLI model default. Use `auto` for Claude Code `/model default`, or set an explicit model id. |
+| `agenticKanbasutra.runners.claude.modelOptions` | Additional Claude model IDs or aliases shown in the task editor. |
 | `agenticKanbasutra.runners.codexCli.*` | Codex CLI executable and base arguments. |
 | `agenticKanbasutra.runners.toolsProfileOptions` | Shared tools/profile selector values. |
 
@@ -229,6 +231,12 @@ Compile and validate:
 npm run check
 npm run package
 ```
+
+Publish from CI after a validated release PR is merged:
+
+1. Add the repository secret `VSCE_PAT` with a Visual Studio Marketplace token that has Marketplace Manage scope.
+2. Open GitHub Actions.
+3. Run `Publish Marketplace` from `main`, optionally entering the expected version.
 
 Launch an Extension Development Host from VS Code with `F5`.
 

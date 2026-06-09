@@ -2,7 +2,7 @@
   "name": "agentickanbasutra",
   "displayName": "AgenticKanbasutra",
   "description": "A personal VS Code workbench for planning, running, and reviewing coding-agent attempts.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "cperezsx",
   "license": "MIT",
   "preview": true,
@@ -349,7 +349,7 @@
         "agenticKanbasutra.runners.claude.defaultModel": {
           "type": "string",
           "default": "auto",
-          "description": "Default model for Claude CLI tasks. Use auto to inherit the Claude Code configured model, or set a model alias such as sonnet or opus."
+          "description": "Default model for Claude CLI tasks. Use auto to inherit Claude Code /model default, currently expected as claude-sonnet-4-6, or set a model id such as claude-opus-4-8."
         },
         "agenticKanbasutra.runners.claude.modelOptions": {
           "type": "array",
@@ -357,7 +357,7 @@
           "items": {
             "type": "string"
           },
-          "description": "Additional Claude model IDs or aliases shown in the task editor."
+          "description": "Additional Claude model IDs or aliases shown in the task editor. Built-in choices include Claude Opus 4.8, Opus 4.7, Opus 4.6, Sonnet 4.6, and Haiku 4.5."
         },
         "agenticKanbasutra.runners.claude.profileOptions": {
           "type": "array",
