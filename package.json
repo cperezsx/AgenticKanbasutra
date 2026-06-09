@@ -4,7 +4,7 @@
   "description": "A personal VS Code workbench for planning, running, and reviewing coding-agent attempts.",
   "version": "0.0.1",
   "publisher": "cperezsx",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "MIT",
   "preview": true,
   "pricing": "Free",
   "repository": {
@@ -19,7 +19,7 @@
     "color": "#03100b",
     "theme": "dark"
   },
-  "qna": "marketplace",
+  "qna": false,
   "engines": {
     "vscode": "^1.92.0"
   },

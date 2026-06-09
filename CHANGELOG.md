@@ -27,17 +27,17 @@ Initial MVP preview.
 - Added robust Copilot CLI and GitHub CLI executable resolution on Windows.
 - Added Copilot CLI preflight validation for remote push tasks blocked by configured permission arguments.
 - Added GitHub Copilot Cloud dispatch runner.
-- Added Copilot integration documentation.
+- Added Copilot setup and runner guidance.
 - Added Copilot setup readiness command and toolbar action.
 - Added Claude CLI preview runner.
 - Added Claude setup readiness command and toolbar action.
-- Added Claude integration documentation.
+- Added Claude setup and runner guidance.
 - Added Codex CLI runner.
 - Added Codex CLI stdin handling and preflight guidance for Git metadata writes.
 - Added Codex Cloud dispatch runner.
 - Added Codex manual handoff runner.
 - Added Codex setup readiness command and toolbar action.
-- Added Codex integration documentation.
+- Added Codex setup and runner guidance.
 - Added VS Code Status Bar summary and quick actions.
 - Added queue mode and concurrency details to the Status Bar tooltip.
 - Added artifact cleanup when tasks are deleted or expired.
@@ -46,10 +46,8 @@ Initial MVP preview.
 - Added explicit task-card and detail visibility for runner, branch, isolation, and permission settings.
 - Added basic task-specific Git worktree execution for local runners.
 - Added run metadata for base branch, worktree path, and created worktree branch.
-- Refined README and documentation for Marketplace-style onboarding.
-- Added a Store Release Guide covering public/private release decisions, sponsor readiness, Marketplace publishing, and remaining launch gaps.
+- Refined README and support files for Marketplace-style onboarding.
 - Added a support guide for users, bug reports, and security escalation.
-- Added getting started and documentation index pages.
 - Added explicit manual completion flow for waiting handoff tasks.
 - Removed hardcoded sample agent profiles so selectors show defaults, discovered agents, or configured agents.
 - Updated publishing documentation and roadmap, including future Claude support.

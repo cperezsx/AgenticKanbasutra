@@ -9,7 +9,6 @@ docs/**
 coverage/**
 src/**
 test/**
-media/brand-concept.png
 *.ts
 tsconfig.json
 package-lock.json
