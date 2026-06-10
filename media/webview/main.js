@@ -92,7 +92,7 @@
 
   function renderSidebar() {
     const shell = el('main', 'sidebar-home');
-    shell.append(renderSidebarIntro(), renderSidebarSummary(), renderSidebarActions(), renderSidebarRecent());
+    shell.append(renderSidebarIntro(), renderSidebarSummary(), renderProviderUsage(), renderSidebarActions(), renderSidebarRecent());
     return shell;
   }
 
@@ -148,14 +148,22 @@
     );
 
     const config = el('div', 'sidebar-actions config-actions');
+    const setupRow = el('div', 'compact-action-row');
+    setupRow.append(
+      compactTextButton('Copilot', t('checkCopilot'), () => post('checkCopilot')),
+      compactTextButton('Codex', t('checkCodex'), () => post('checkCodex')),
+      compactTextButton('Claude', t('checkClaude'), () => post('checkClaude'))
+    );
+    const queueRow = el('div', 'compact-action-row');
+    queueRow.append(
+      compactTextButton('Settings', t('openSettings'), () => post('openSettings')),
+      compactTextButton(board.queuePaused ? 'Resume' : 'Pause', board.queuePaused ? t('resumeQueue') : t('pauseQueue'), () => post(board.queuePaused ? 'resumeQueue' : 'pauseQueue')),
+      compactTextButton(board.completedVisible ? 'Done off' : 'Done on', board.completedVisible ? t('hideCompleted') : t('showCompleted'), () => toggleCompletedVisibility())
+    );
     config.append(
-      button(t('openSettings'), 'wide', () => post('openSettings')),
       button(`${t('queueMode')}: ${queueModeLabel()}`, 'wide queue-mode-button', () => toggleQueueExecutionMode()),
-      button(board.queuePaused ? t('resumeQueue') : t('pauseQueue'), 'wide', () => post(board.queuePaused ? 'resumeQueue' : 'pauseQueue')),
-      button(board.completedVisible ? t('hideCompleted') : t('showCompleted'), 'wide', () => toggleCompletedVisibility()),
-      button(t('checkCopilot'), 'wide', () => post('checkCopilot')),
-      button(t('checkCodex'), 'wide', () => post('checkCodex')),
-      button(t('checkClaude'), 'wide', () => post('checkClaude')),
+      setupRow,
+      queueRow,
       button(t('cleanup'), 'danger wide', () => post('cleanupCompleted'))
     );
 
@@ -164,6 +172,53 @@
     content.append(primary, config);
     actions.append(content);
     return actions;
+  }
+
+  function renderProviderUsage() {
+    const sectionId = 'providerUsage';
+    const contentId = 'sidebar-provider-usage-content';
+    const snapshots = providerUsageSnapshots();
+    const collapsed = isSidebarSectionCollapsed(sectionId);
+    const section = el('section', `sidebar-section provider-usage-section collapsible-section${collapsed ? ' is-collapsed' : ''}`);
+    section.append(collapsibleSectionHead(t('providerUsage'), providerUsageMeta(snapshots), collapsed, contentId, () => toggleSidebarSection(sectionId)));
+    if (collapsed) {
+      return section;
+    }
+    const content = el('div', 'sidebar-section-content provider-usage-list');
+    content.id = contentId;
+    for (const snapshot of snapshots) {
+      content.append(renderProviderUsageRow(snapshot));
+    }
+    const actions = el('div', 'provider-usage-actions');
+    actions.append(compactTextButton(t('updateHealth'), t('updateHealth'), () => post('updateProviderHealth')));
+    content.append(actions);
+    section.append(content);
+    return section;
+  }
+
+  function renderProviderUsageRow(snapshot) {
+    const row = el('div', 'provider-usage-row');
+    const provider = el('div', 'provider-usage-provider');
+    provider.innerHTML = `
+      <strong>${escapeHtml(providerLabel(snapshot.providerId))}</strong>
+      <span>${escapeHtml(snapshot.label || statusLabel(snapshot.status))}</span>
+    `;
+    const badge = el('span', `usage-badge usage-${snapshot.status || 'unknown'}`, statusLabel(snapshot.status));
+    badge.title = usageTooltip(snapshot);
+    badge.setAttribute('aria-label', usageTooltip(snapshot));
+    const action = providerUsageAction(snapshot.providerId);
+    row.append(provider, badge, action);
+    return row;
+  }
+
+  function providerUsageAction(providerId) {
+    if (providerId === 'codex') {
+      return compactTextButton('Check', t('checkUsage'), () => post('checkCodexUsage'));
+    }
+    if (providerId === 'claude') {
+      return compactTextButton('Check', t('checkUsage'), () => post('checkClaudeUsage'));
+    }
+    return compactTextButton('Web', t('viewUsageWeb'), () => post('viewCopilotUsage'));
   }
 
   function renderSidebarRecent() {
@@ -254,7 +309,8 @@
 
     const actions = el('div', 'toolbar');
     actions.append(renderBoardGroupControl());
-    actions.append(
+    const queueActions = el('div', 'toolbar-cluster');
+    queueActions.append(
       button(t('newTask'), 'primary', () => {
         editorTask = createDraftTask();
         selectedTaskId = null;
@@ -263,16 +319,43 @@
       }),
       button(queueModeLabel(), 'queue-mode-button', () => toggleQueueExecutionMode()),
       button(t('runNext'), '', () => post('runNext')),
-      button(t('checkCopilot'), '', () => post('checkCopilot')),
-      button(t('checkCodex'), '', () => post('checkCodex')),
-      button(t('checkClaude'), '', () => post('checkClaude')),
-      button(board.queuePaused ? t('resumeQueue') : t('pauseQueue'), '', () => post(board.queuePaused ? 'resumeQueue' : 'pauseQueue')),
-      button(board.completedVisible ? t('hideCompleted') : t('showCompleted'), '', () => toggleCompletedVisibility()),
-      button(t('cleanup'), 'danger', () => post('cleanupCompleted'))
+      compactButton(board.queuePaused ? t('resumeQueue') : t('pauseQueue'), board.queuePaused ? 'play' : 'pause', () => post(board.queuePaused ? 'resumeQueue' : 'pauseQueue'))
     );
+    const healthActions = el('div', 'toolbar-cluster');
+    healthActions.append(
+      compactButton(t('checkCopilot'), 'shield', () => post('checkCopilot')),
+      compactButton(t('checkCodex'), 'bot', () => post('checkCodex')),
+      compactButton(t('checkClaude'), 'sparkle', () => post('checkClaude'))
+    );
+    const boardActions = el('div', 'toolbar-cluster');
+    const cleanupButton = compactButton(t('cleanup'), 'trash', () => post('cleanupCompleted'));
+    cleanupButton.classList.add('danger');
+    boardActions.append(
+      compactButton(board.completedVisible ? t('hideCompleted') : t('showCompleted'), 'eye', () => toggleCompletedVisibility()),
+      compactButton(t('openDetachedBoard'), 'external', () => post('openDetachedBoard')),
+      cleanupButton
+    );
+    actions.append(queueActions, healthActions, boardActions);
 
-    header.append(brand, actions);
+    header.append(brand, renderBoardProviderUsageStrip(), actions);
     return header;
+  }
+
+  function renderBoardProviderUsageStrip() {
+    const strip = el('div', 'board-provider-strip');
+    strip.setAttribute('aria-label', t('providerUsage'));
+    for (const snapshot of providerUsageSnapshots()) {
+      const chip = el('span', `board-provider-chip usage-${snapshot.status || 'unknown'}`);
+      chip.title = usageTooltip(snapshot);
+      chip.setAttribute('aria-label', usageTooltip(snapshot));
+      chip.innerHTML = `
+        <strong>${escapeHtml(providerLabel(snapshot.providerId))}</strong>
+        <span>${escapeHtml(statusLabel(snapshot.status))}</span>
+      `;
+      strip.append(chip);
+    }
+    strip.append(compactButton(t('updateHealth'), 'pulse', () => post('updateProviderHealth')));
+    return strip;
   }
 
   function renderBoardGroupControl() {
@@ -388,6 +471,7 @@
       task.isolationMode || 'workspace',
       permissionLabel(task.permissionProfile) || 'permissions'
     ];
+    const providerUsage = taskProviderUsage(task);
     card.innerHTML = `
       <div class="card-leds"><i></i><i></i><i></i></div>
       ${active ? agentActivityMarkup(task) : ''}
@@ -397,6 +481,7 @@
       <div class="card-foot">
         <span class="priority">${escapeHtml(task.priority)}</span>
         <span>${escapeHtml(formatStatus(task.status))}</span>
+        ${providerUsage ? providerUsageChipMarkup(providerUsage) : ''}
         ${run?.changedFiles?.length ? `<span>${escapeHtml(String(run.changedFiles.length))} files</span>` : ''}
       </div>
     `;
@@ -411,6 +496,9 @@
     }
     if (task.status === 'failed') {
       actions.append(iconButton(t('requeue'), 'queue', () => post('enqueueTask', task.id)));
+    }
+    if (task.repository?.path) {
+      actions.append(iconButton(t('openRepository'), 'folder', () => post('openRepository', task.repository.path)));
     }
     actions.append(iconButton(t('duplicate'), 'copy', () => post('duplicateTask', task.id)));
     actions.append(iconButton(t('delete'), 'trash', () => post('deleteTask', task.id)));
@@ -1594,20 +1682,159 @@
   }
 
   function iconButton(label, icon, onClick) {
-    const element = button(iconGlyph(icon), 'icon-button', onClick);
+    const element = button('', 'icon-button', onClick);
+    element.innerHTML = iconMarkup(icon);
     element.title = label;
     element.setAttribute('aria-label', label);
     return element;
   }
 
-  function iconGlyph(icon) {
+  function compactButton(label, icon, onClick) {
+    const element = iconButton(label, icon, onClick);
+    element.classList.add('compact-icon-button');
+    return element;
+  }
+
+  function compactTextButton(text, label, onClick) {
+    const element = button(text, 'compact-text-button', onClick);
+    element.title = label;
+    element.setAttribute('aria-label', label);
+    return element;
+  }
+
+  function iconMarkup(icon) {
+    const icons = {
+      queue: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10"/><path d="M4 12h10"/><path d="M4 18h10"/><path d="m17 8 4 4-4 4"/></svg>',
+      play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>',
+      pause: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14"/><path d="M15 5v14"/></svg>',
+      pulse: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg>',
+      shield: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 2.8 8.2 7 10 4.2-1.8 7-5.5 7-10V6z"/><path d="m9 12 2 2 4-5"/></svg>',
+      bot: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3"/><rect x="5" y="7" width="14" height="11" rx="3"/><path d="M8 21h8"/><path d="M9 12h.01"/><path d="M15 12h.01"/></svg>',
+      sparkle: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 2.1L22 19l-2.3.9L19 22l-.9-2.1L16 19l2.1-.9z"/></svg>',
+      check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>',
+      web: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/><path d="M14 4h6v6"/><path d="m10 14 10-10"/></svg>',
+      folder: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h7l2 3h9v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 7v11"/></svg>',
+      external: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3h7v7"/><path d="m21 3-9 9"/><path d="M19 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/></svg>',
+      settings: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/><path d="M4 12h2"/><path d="M18 12h2"/><path d="M12 4v2"/><path d="M12 18v2"/><path d="m6.3 6.3 1.4 1.4"/><path d="m16.3 16.3 1.4 1.4"/><path d="m17.7 6.3-1.4 1.4"/><path d="m7.7 16.3-1.4 1.4"/></svg>',
+      eye: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+      copy: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>',
+      trash: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M6 7l1 14h10l1-14"/><path d="M9 7V4h6v3"/></svg>',
+      close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6 6 18"/></svg>'
+    };
+    return icons[icon] || '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/></svg>';
+  }
+
+  function providerUsageSnapshots() {
+    const byId = new Map((board.providerUsage || []).map((snapshot) => [snapshot.providerId, snapshot]));
+    return ['codex', 'claude', 'copilot'].map((providerId) => byId.get(providerId) || {
+      providerId,
+      status: 'unknown',
+      confidence: providerId === 'copilot' ? 'manual' : 'unavailable',
+      label: providerId === 'copilot' ? 'View on web' : 'Not checked',
+      source: providerId === 'copilot' ? 'copilot-web' : 'manual'
+    });
+  }
+
+  function taskProviderUsage(task) {
+    const providerId = providerIdForRunner(task.runner?.id || '');
+    if (!providerId) {
+      return undefined;
+    }
+    return providerUsageSnapshots().find((snapshot) => snapshot.providerId === providerId);
+  }
+
+  function providerIdForRunner(runnerId) {
+    if (String(runnerId).startsWith('codex')) return 'codex';
+    if (String(runnerId).startsWith('claude')) return 'claude';
+    if (String(runnerId).startsWith('copilot')) return 'copilot';
+    return undefined;
+  }
+
+  function providerUsageChipMarkup(snapshot) {
+    const label = `${providerLabel(snapshot.providerId)} ${statusLabel(snapshot.status)}`;
+    return `<span class="card-provider-chip usage-${escapeAttribute(snapshot.status || 'unknown')}" title="${escapeAttribute(usageTooltip(snapshot))}">${escapeHtml(label)}</span>`;
+  }
+
+  function providerUsageMeta(snapshots) {
+    const blocked = snapshots.find((snapshot) => snapshot.status === 'blocked');
+    if (blocked) {
+      return `${providerLabel(blocked.providerId)} ${statusLabel('blocked')}`;
+    }
+    const warningCount = snapshots.filter((snapshot) => snapshot.status === 'warning').length;
+    if (warningCount > 0) {
+      return `${warningCount} ${String(t('usageWarning')).toLowerCase()}`;
+    }
+    const checkedCount = snapshots.filter((snapshot) => snapshot.checkedAt).length;
+    return checkedCount > 0 ? `${checkedCount}/3 checked` : t('usageUnknown');
+  }
+
+  function providerLabel(providerId) {
     return {
-      queue: '>>',
-      play: '>',
-      copy: '[]',
-      trash: 'x',
-      close: 'x'
-    }[icon] || '*';
+      codex: 'Codex',
+      claude: 'Claude',
+      copilot: 'Copilot'
+    }[providerId] || 'Provider';
+  }
+
+  function statusLabel(status) {
+    return {
+      healthy: t('usageHealthy'),
+      warning: t('usageWarning'),
+      blocked: t('usageBlocked'),
+      unknown: t('usageUnknown')
+    }[status] || t('usageUnknown');
+  }
+
+  function usageTooltip(snapshot) {
+    const windows = Array.isArray(snapshot.usageWindows)
+      ? snapshot.usageWindows.map((window) => {
+        const used = window.percentUsed !== undefined ? `${window.percentUsed}% used` : undefined;
+        const remaining = window.percentRemaining !== undefined ? `${window.percentRemaining}% remaining` : undefined;
+        const reset = window.resetAfterSeconds !== undefined
+          ? `resets in ${formatDuration(window.resetAfterSeconds)}`
+          : window.resetAt ? `resets at ${window.resetAt}` : undefined;
+        return `${window.label || window.id}: ${[used, remaining, reset].filter(Boolean).join(', ')}`;
+      })
+      : [];
+    const lines = [
+      `${providerLabel(snapshot.providerId)}: ${snapshot.label || statusLabel(snapshot.status)}`,
+      snapshot.percentRemaining !== undefined ? `${snapshot.percentRemaining}% remaining` : undefined,
+      snapshot.percentUsed !== undefined ? `${snapshot.percentUsed}% used` : undefined,
+      ...windows,
+      `${t('usageSource')}: ${snapshot.source || 'unknown'}`,
+      `${t('usageConfidence')}: ${snapshot.confidence || 'unknown'}`,
+      `${t('usageLastChecked')}: ${snapshot.checkedAt ? relativeTime(snapshot.checkedAt) : 'never'}`,
+      `${t('usageReset')}: ${snapshot.resetAt || 'unknown'}`,
+      snapshot.rawSummary ? shorten(snapshot.rawSummary, 220) : t('usageUnavailable')
+    ];
+    return lines.filter(Boolean).join('\n');
+  }
+
+  function formatDuration(totalSeconds) {
+    const seconds = Math.max(0, Math.round(Number(totalSeconds) || 0));
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    if (days > 0) return hours > 0 ? `${days}d ${hours}h` : `${days}d`;
+    if (hours > 0) return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+    return `${minutes}m`;
+  }
+
+  function relativeTime(value) {
+    const time = new Date(value).getTime();
+    if (!Number.isFinite(time)) {
+      return 'unknown';
+    }
+    const seconds = Math.max(0, Math.round((Date.now() - time) / 1000));
+    if (seconds < 60) {
+      return `${seconds}s ago`;
+    }
+    const minutes = Math.round(seconds / 60);
+    if (minutes < 60) {
+      return `${minutes}m ago`;
+    }
+    const hours = Math.round(minutes / 60);
+    return `${hours}h ago`;
   }
 
   function formatStatus(status) {

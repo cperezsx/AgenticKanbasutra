@@ -1,13 +1,17 @@
 {
   "agenticKanbasutra.container.title": "AgenticKanbasutra",
   "agenticKanbasutra.board.name": "Kanban",
-  "agenticKanbasutra.command.open": "Open AgenticKanbasutra",
+  "agenticKanbasutra.command.open": "Open Board in Editor",
   "agenticKanbasutra.command.newTask": "New Task",
   "agenticKanbasutra.command.runNext": "Run Next Task",
   "agenticKanbasutra.command.cleanupCompleted": "Clean Completed Tasks",
   "agenticKanbasutra.command.checkCopilot": "Check Copilot Setup",
   "agenticKanbasutra.command.checkCodex": "Check Codex Setup",
   "agenticKanbasutra.command.checkClaude": "Check Claude Setup",
+  "agenticKanbasutra.command.checkCodexUsage": "Check Codex Usage",
+  "agenticKanbasutra.command.checkClaudeUsage": "Check Claude Usage",
+  "agenticKanbasutra.command.viewCopilotUsage": "View Copilot Usage",
+  "agenticKanbasutra.command.updateProviderHealth": "Update Provider Health",
   "agenticKanbasutra.command.statusBarActions": "Show AgenticKanbasutra Status Actions",
   "agenticKanbasutra.command.toggleQueue": "Toggle AgenticKanbasutra Queue",
   "agenticKanbasutra.command.openSettings": "Open AgenticKanbasutra Settings"

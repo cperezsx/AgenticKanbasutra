@@ -14,6 +14,7 @@ import { checkCodexEnvironment } from '../runners/codex/codexEnvironment';
 import { checkCopilotEnvironment } from '../runners/copilot/copilotEnvironment';
 import { RunnerRegistry } from '../runners/runnerRegistry';
 import { TaskStore } from '../storage/taskStore';
+import { ProviderUsageService, providerIdForRunner } from '../usage/providerUsage';
 
 interface RunnerDiscovery {
   githubModels: RunnerConfigurationOption['models'];
@@ -38,6 +39,7 @@ export class BoardProvider implements vscode.WebviewViewProvider {
   private panelReady = false;
   private readonly pendingPanelMessages: unknown[] = [];
   private readonly git = new GitService();
+  private readonly providerUsage: ProviderUsageService;
 
   constructor(
     private readonly context: vscode.ExtensionContext,
@@ -45,6 +47,7 @@ export class BoardProvider implements vscode.WebviewViewProvider {
     private readonly orchestrator: Orchestrator,
     private readonly registry: RunnerRegistry
   ) {
+    this.providerUsage = new ProviderUsageService(context.globalStorageUri.fsPath);
     this.orchestrator.onDidChange.event(() => void this.postState());
     this.store.onDidChange.event(() => void this.postState());
   }
@@ -85,6 +88,9 @@ export class BoardProvider implements vscode.WebviewViewProvider {
         case 'openBoard':
           await this.openBoard(false);
           break;
+        case 'openDetachedBoard':
+          await this.openDetachedBoard();
+          break;
         case 'openNewTaskPanel':
           await this.openBoard(true);
           break;
@@ -117,13 +123,17 @@ export class BoardProvider implements vscode.WebviewViewProvider {
           await this.updateTask(message.payload as Partial<TaskSpec>);
           break;
         case 'enqueueTask':
-          await this.orchestrator.enqueue(String(message.payload));
+          if (await this.confirmProviderUsageBeforeTask(String(message.payload))) {
+            await this.orchestrator.enqueue(String(message.payload));
+          }
           break;
         case 'moveTaskToPending':
           await this.moveTaskToPending(String(message.payload));
           break;
         case 'runTask':
-          await this.orchestrator.runTask(String(message.payload));
+          if (await this.confirmProviderUsageBeforeTask(String(message.payload))) {
+            await this.orchestrator.runTask(String(message.payload));
+          }
           break;
         case 'cancelRun':
           await this.orchestrator.cancelRun(String(message.payload));
@@ -172,6 +182,9 @@ export class BoardProvider implements vscode.WebviewViewProvider {
         case 'revealPath':
           await this.revealPath(String(message.payload));
           break;
+        case 'openRepository':
+          await this.openRepository(String(message.payload));
+          break;
         case 'checkCopilot':
           await this.checkCopilot();
           break;
@@ -180,6 +193,18 @@ export class BoardProvider implements vscode.WebviewViewProvider {
           break;
         case 'checkClaude':
           await this.checkClaude();
+          break;
+        case 'checkCodexUsage':
+          await this.checkCodexUsage();
+          break;
+        case 'checkClaudeUsage':
+          await this.checkClaudeUsage();
+          break;
+        case 'viewCopilotUsage':
+          await this.viewCopilotUsage();
+          break;
+        case 'updateProviderHealth':
+          await this.updateProviderHealth();
           break;
         case 'completeManualTask':
           await this.completeManualTask(message.payload as { taskId: string; summary: string });
@@ -218,6 +243,15 @@ export class BoardProvider implements vscode.WebviewViewProvider {
     await this.postState();
     if (openNewTask) {
       await this.postToPanel({ type: 'openNewTask' });
+    }
+  }
+
+  private async openDetachedBoard(): Promise<void> {
+    await this.openBoard(false);
+    try {
+      await vscode.commands.executeCommand('workbench.action.moveEditorToNewWindow');
+    } catch {
+      await vscode.window.showInformationMessage('Open the board editor, then use VS Code: Move Editor into New Window if your VS Code version supports it.');
     }
   }
 
@@ -600,6 +634,37 @@ export class BoardProvider implements vscode.WebviewViewProvider {
     await vscode.window.showTextDocument(document, { preview: true });
   }
 
+  async checkCodexUsage(): Promise<void> {
+    const snapshot = await this.providerUsage.checkCodex(true);
+    await this.postState();
+    await vscode.window.showInformationMessage(`Codex usage: ${snapshot.label}`);
+  }
+
+  async checkClaudeUsage(): Promise<void> {
+    const snapshot = await this.providerUsage.checkClaude(true);
+    await this.postState();
+    await vscode.window.showInformationMessage(`Claude usage: ${snapshot.label}`);
+  }
+
+  async viewCopilotUsage(): Promise<void> {
+    await this.providerUsage.markCopilotManualOpen();
+    await this.postState();
+    await vscode.env.openExternal(vscode.Uri.parse('https://github.com/settings/copilot'));
+  }
+
+  async updateProviderHealth(): Promise<void> {
+    const snapshots = await vscode.window.withProgress({
+      location: vscode.ProgressLocation.Notification,
+      title: 'Updating provider health...',
+      cancellable: false
+    }, async () => this.providerUsage.refreshAll());
+    await this.postState();
+    const blocked = snapshots.filter((snapshot) => snapshot.status === 'blocked').length;
+    const warning = snapshots.filter((snapshot) => snapshot.status === 'warning').length;
+    const unknown = snapshots.filter((snapshot) => snapshot.status === 'unknown').length;
+    await vscode.window.showInformationMessage(`Provider health updated: ${blocked} blocked, ${warning} warning, ${unknown} unknown.`);
+  }
+
   private async openArtifact(filePath: string): Promise<void> {
     const uri = vscode.Uri.file(filePath);
     try {
@@ -625,6 +690,54 @@ export class BoardProvider implements vscode.WebviewViewProvider {
     } catch {
       await vscode.window.showWarningMessage(`Changed file not found: ${relativePath}`);
     }
+  }
+
+  private async openRepository(repositoryPath: string): Promise<void> {
+    if (!repositoryPath) {
+      await vscode.window.showWarningMessage('Repository path is missing.');
+      return;
+    }
+
+    try {
+      await fs.access(repositoryPath);
+      const workspacePath = await this.findWorkspaceFile(repositoryPath);
+      const targetUri = vscode.Uri.file(workspacePath ?? repositoryPath);
+      await vscode.commands.executeCommand('vscode.openFolder', targetUri, true);
+    } catch {
+      await vscode.window.showWarningMessage(`Repository path not found: ${repositoryPath}`);
+    }
+  }
+
+  private async findWorkspaceFile(repositoryPath: string): Promise<string | undefined> {
+    const stat = await fs.stat(repositoryPath);
+    if (stat.isFile() && repositoryPath.toLowerCase().endsWith('.code-workspace')) {
+      return repositoryPath;
+    }
+
+    const repositoryDirectory = stat.isDirectory() ? repositoryPath : path.dirname(repositoryPath);
+    const parentDirectory = path.dirname(repositoryDirectory);
+    for (const directoryPath of dedupeStrings([repositoryDirectory, parentDirectory])) {
+      const workspaceFile = await this.firstWorkspaceFile(directoryPath, path.basename(repositoryDirectory));
+      if (workspaceFile) {
+        return workspaceFile;
+      }
+    }
+    return undefined;
+  }
+
+  private async firstWorkspaceFile(directoryPath: string, preferredName: string): Promise<string | undefined> {
+    let entries: Array<import('fs').Dirent>;
+    try {
+      entries = await fs.readdir(directoryPath, { withFileTypes: true });
+    } catch {
+      return undefined;
+    }
+    const workspaceFiles = entries
+      .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith('.code-workspace'))
+      .map((entry) => path.join(directoryPath, entry.name))
+      .sort((left, right) => path.basename(left).localeCompare(path.basename(right)));
+    return workspaceFiles.find((filePath) => path.basename(filePath, '.code-workspace').toLowerCase() === preferredName.toLowerCase())
+      ?? workspaceFiles[0];
   }
 
   private async revealPath(filePath: string): Promise<void> {
@@ -656,10 +769,12 @@ export class BoardProvider implements vscode.WebviewViewProvider {
     const workspaceBranches = workspaceFolders[0]?.path ? await this.git.getBranches(workspaceFolders[0].path) : [];
     const repositoryBranches = await this.getRepositoryBranches(knownRepositoryPaths);
     const runnerConfiguration = await this.createRunnerConfiguration(config, knownRepositoryPaths);
+    const runs = await this.store.getRuns();
 
     return {
       tasks,
-      runs: await this.store.getRuns(),
+      runs,
+      providerUsage: await this.providerUsage.getSnapshots(runs),
       completedVisible: config.get<boolean>('completed.visible', true),
       queuePaused: this.orchestrator.isQueuePaused(),
       queueExecutionMode: this.orchestrator.getQueueExecutionMode(),
@@ -676,6 +791,49 @@ export class BoardProvider implements vscode.WebviewViewProvider {
       repositoryBranches,
       repositoryDiscovery: runnerConfiguration.discoveryInfo
     };
+  }
+
+  private async confirmProviderUsageBeforeTask(taskId: string): Promise<boolean> {
+    const tasks = await this.store.getTasks();
+    const task = tasks.find((item) => item.id === taskId);
+    if (!task) {
+      return true;
+    }
+    const providerId = providerIdForRunner(task.runner.id);
+    if (!providerId) {
+      return true;
+    }
+
+    const providerLabel = providerId.charAt(0).toUpperCase() + providerId.slice(1);
+    const snapshot = providerId === 'copilot'
+      ? await this.providerUsage.preflight(providerId, await this.store.getRuns())
+      : await vscode.window.withProgress({
+        location: vscode.ProgressLocation.Notification,
+        title: `Checking ${providerLabel} usage before queueing...`,
+        cancellable: false
+      }, async () => this.providerUsage.preflight(providerId, await this.store.getRuns()));
+    await this.postState();
+    if (!snapshot || snapshot.status !== 'blocked') {
+      return true;
+    }
+
+    const choice = await vscode.window.showWarningMessage(
+      `${providerLabel} usage looks blocked: ${snapshot.label}. Source: ${snapshot.source}.`,
+      'Check usage',
+      'Queue anyway',
+      'Cancel'
+    );
+    if (choice === 'Check usage') {
+      if (providerId === 'codex') {
+        await this.checkCodexUsage();
+      } else if (providerId === 'claude') {
+        await this.checkClaudeUsage();
+      } else {
+        await this.viewCopilotUsage();
+      }
+      return false;
+    }
+    return choice === 'Queue anyway';
   }
 
   private async createRunnerOptions(config: vscode.WorkspaceConfiguration, repositoryPaths: string[]): Promise<RunnerConfigurationOption[]> {
