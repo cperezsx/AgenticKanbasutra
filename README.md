@@ -2,7 +2,7 @@
 
 > A preview VS Code extension for planning, queueing, running, and reviewing coding-agent tasks across local Git repositories.
 
-[![Version](https://img.shields.io/badge/version-0.0.2-68f0a7)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.0.3-68f0a7)](CHANGELOG.md)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.92-65d8e9)](https://code.visualstudio.com/)
 [![License](https://img.shields.io/badge/license-MIT-f3bb58)](LICENSE)
 [![Status](https://img.shields.io/badge/status-preview-c99cff)](#preview-status)
@@ -27,6 +27,7 @@ It is designed for individual developers who want a safer command center for Cop
 - [Queue Modes](#queue-modes)
 - [Permissions And Isolation](#permissions-and-isolation)
 - [Setup Checks](#setup-checks)
+- [Provider Usage Health](#provider-usage-health)
 - [Configuration](#configuration)
 - [Safety](#safety)
 - [Support](#support)
@@ -39,8 +40,11 @@ It is designed for individual developers who want a safer command center for Cop
 
 - Keep agent tasks organized instead of losing prompts in chat history.
 - Run tasks manually or automatically from a queue.
+- Open the full board as an editor webview when the sidebar is too tight.
 - Choose the right runner, model, permissions, and repository per task.
+- Open a task repository or nearby `.code-workspace` directly in a new VS Code window.
 - Capture prompts, logs, summaries, diffs, changed files, and failure details.
+- Run best-effort provider health preflights for Codex and Claude before queueing work, with Copilot linked to web review.
 - Requeue failed tasks after fixing authentication, quota, permissions, or configuration.
 - Review generated work before accepting, merging, or publishing anything.
 
@@ -53,6 +57,10 @@ AgenticKanbasutra is not a replacement for code review, Git discipline, or human
 ![New task composer](https://raw.githubusercontent.com/cperezsx/AgenticKanbasutra/main/media/screenshots/02-new-task-composer.png)
 
 ![Task review and artifacts](https://raw.githubusercontent.com/cperezsx/AgenticKanbasutra/main/media/screenshots/03-task-review-artifacts.png)
+
+![Provider usage health](https://raw.githubusercontent.com/cperezsx/AgenticKanbasutra/main/media/screenshots/04-provider-usage-health.png)
+
+![Provider limit warning](https://raw.githubusercontent.com/cperezsx/AgenticKanbasutra/main/media/screenshots/05-provider-limit-warning.png)
 
 ## Workflow
 
@@ -154,6 +162,20 @@ The extension includes setup reports for provider-backed runners:
 - `AgenticKanbasutra: Check Codex Setup`
 
 These reports help confirm executable resolution, authentication signals, and local configuration before you run real tasks.
+
+## Provider Usage Health
+
+The sidebar includes a collapsible Provider Usage section, and the board header repeats the same signal as compact chips so provider health is visible while you work. Codex uses `codex doctor` and Claude uses `claude auth status` for non-interactive local readiness checks; Copilot opens the relevant GitHub usage page for manual review.
+
+Task cards also show a compact provider health chip when the runner maps to Codex, Claude, or Copilot, so the board keeps the signal visible without adding another panel.
+
+Before queueing or running a Codex or Claude task, AgenticKanbasutra uses a fresh cached health snapshot when possible; if the snapshot is missing or stale, it tries a short CLI preflight first. If the provider appears blocked by auth, connectivity, quota, tokens, or a recent resource-limit failure, it warns before adding more work. If health cannot be confirmed, the task can still be queued and the sidebar shows the provider as unknown.
+
+Use `Update Health` to force a fresh best-effort read for locally checkable providers. Copilot remains a web/manual review in this preview.
+
+Usage badges show source, confidence, timestamp, and parsed readiness or quota details when the provider output includes them. For Codex, AgenticKanbasutra also tries to enrich `codex doctor` with the latest local `codex.rate_limits` event when available, showing primary and secondary window percentages and reset timing similar to `/status`. Claude keeps `claude auth status` as the safe non-interactive check and parses usage/reset details only when the local output includes them. Non-blocking local diagnostics, such as an old Git warning from `codex doctor`, are kept in the tooltip without marking Codex usage as blocked or warning. This is not an exact token counter; it is a preview health signal designed to avoid obvious blocked runs.
+
+From the board header you can also open the full board in an editor tab or ask VS Code to move that board editor into a separate window when your VS Code version supports auxiliary editor windows.
 
 ## Configuration
 

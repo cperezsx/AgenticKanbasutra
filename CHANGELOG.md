@@ -2,6 +2,27 @@
 
 All notable changes to AgenticKanbasutra will be documented in this file.
 
+## 0.0.3
+
+Provider usage health preview for safer queue decisions.
+
+- Added a compact, collapsible Provider Usage section to the sidebar.
+- Added compact Provider Usage chips to the board header, including a one-click Update Health action.
+- Made the full board editor webview explicit from the sidebar and command palette.
+- Added an Open in window action from the board editor that asks VS Code to move the board into a separate editor window when supported.
+- Added non-interactive Codex and Claude health checks from local CLI diagnostics when available.
+- Added best-effort Codex rate-limit enrichment from recent local `codex.rate_limits` events, including used/remaining percentages and reset timing.
+- Added defensive Claude usage parsing when local Claude CLI output includes percentage or reset details.
+- Kept non-blocking Codex local diagnostics in tooltips without turning the provider usage signal into warning.
+- Added Update Health to refresh provider usage health from the locally checkable clients.
+- Added a Copilot usage web shortcut for manual quota review.
+- Added provider usage badges with source, confidence, timestamp, and parsed quota details in hover tooltips.
+- Added compact provider health chips to task cards.
+- Added cached preflight checks before queueing or running Codex and Claude tasks when health data is missing or stale.
+- Added queue warnings when a provider appears to be blocked by direct health checks or recent quota/token failures.
+- Added Open Repository from task cards, preferring a nearby `.code-workspace` when one exists.
+- Compactly restyled board and sidebar actions so queue, setup, health, and maintenance controls take less space.
+
 ## 0.0.2
 
 Focused preview update for denser boards and clearer Claude CLI model selection.

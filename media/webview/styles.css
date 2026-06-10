@@ -62,9 +62,9 @@ textarea {
   position: sticky;
   top: 0;
   z-index: 5;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto minmax(280px, auto);
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
   padding: 12px;
   border-bottom: 1px solid var(--ak-line);
@@ -296,6 +296,162 @@ textarea {
   padding-top: 0;
 }
 
+.board-provider-strip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--ak-line) 62%, transparent);
+  border-radius: 7px;
+  padding: 3px;
+  background: color-mix(in srgb, var(--ak-panel) 72%, transparent);
+}
+
+.board-provider-chip {
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  border: 1px solid color-mix(in srgb, var(--ak-line) 70%, transparent);
+  border-radius: 5px;
+  padding: 2px 6px;
+  background: transparent;
+  color: var(--ak-muted);
+  cursor: help;
+}
+
+.board-provider-chip strong,
+.board-provider-chip span {
+  font-size: 9px;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.board-provider-chip strong {
+  color: var(--ak-text);
+}
+
+.board-provider-chip.usage-healthy span {
+  color: var(--ak-green);
+}
+
+.board-provider-chip.usage-warning span {
+  color: var(--ak-amber);
+}
+
+.board-provider-chip.usage-blocked span {
+  color: var(--ak-red);
+}
+
+.board-provider-chip.usage-unknown span {
+  color: var(--ak-muted);
+}
+
+.compact-action-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.compact-action-row .compact-icon-button,
+.compact-action-row .compact-text-button {
+  width: 100%;
+}
+
+.provider-usage-list {
+  display: grid;
+  gap: 0;
+}
+
+.provider-usage-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 6px 8px;
+  border-top: 1px solid color-mix(in srgb, var(--ak-line) 54%, transparent);
+}
+
+.provider-usage-row:first-child {
+  border-top: 0;
+}
+
+.provider-usage-actions {
+  display: grid;
+  padding: 6px 8px 8px;
+  border-top: 1px solid color-mix(in srgb, var(--ak-line) 54%, transparent);
+}
+
+.provider-usage-actions .compact-text-button {
+  width: 100%;
+}
+
+.provider-usage-provider {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.provider-usage-provider strong,
+.provider-usage-provider span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.provider-usage-provider strong {
+  color: var(--ak-text);
+  font-size: 11px;
+}
+
+.provider-usage-provider span {
+  color: var(--ak-muted);
+  font-size: 10px;
+}
+
+.usage-badge {
+  min-width: 58px;
+  min-height: 22px;
+  border: 1px solid color-mix(in srgb, var(--ak-line) 70%, transparent);
+  border-radius: 999px;
+  padding: 2px 7px;
+  background: color-mix(in srgb, var(--ak-panel-2) 76%, transparent);
+  color: var(--ak-muted);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: help;
+}
+
+.usage-badge:focus-visible {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: 2px;
+}
+
+.usage-healthy {
+  border-color: color-mix(in srgb, var(--ak-green) 56%, var(--ak-line));
+  color: var(--ak-green);
+}
+
+.usage-warning {
+  border-color: color-mix(in srgb, var(--ak-amber) 64%, var(--ak-line));
+  color: var(--ak-amber);
+}
+
+.usage-blocked {
+  border-color: color-mix(in srgb, var(--ak-red) 64%, var(--ak-line));
+  color: var(--ak-red);
+}
+
+.usage-unknown {
+  color: var(--ak-muted);
+}
+
 .button.wide {
   width: 100%;
 }
@@ -351,6 +507,21 @@ textarea {
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
+}
+
+.toolbar {
+  justify-content: flex-end;
+}
+
+.toolbar-cluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 30px;
+  border: 1px solid color-mix(in srgb, var(--ak-line) 62%, transparent);
+  border-radius: 7px;
+  padding: 3px;
+  background: color-mix(in srgb, var(--ak-panel) 72%, transparent);
 }
 
 .button {
@@ -457,6 +628,37 @@ textarea {
   line-height: 1;
 }
 
+.icon-button svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+  margin: auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.compact-icon-button {
+  width: 26px;
+  min-height: 24px;
+  border-radius: 5px;
+  color: var(--ak-cyan);
+}
+
+.compact-text-button {
+  min-height: 24px;
+  border-radius: 5px;
+  padding: 3px 6px;
+  color: var(--ak-cyan);
+  font-size: 10px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .kanban {
   display: grid;
   grid-template-columns: repeat(5, minmax(210px, 1fr));
@@ -553,9 +755,9 @@ textarea {
 .task-card {
   position: relative;
   display: grid;
-  gap: 7px;
-  min-height: 136px;
-  padding: 9px;
+  gap: 6px;
+  min-height: 124px;
+  padding: 8px;
   border: 1px solid var(--ak-line);
   border-radius: 6px;
   background:
@@ -726,7 +928,7 @@ textarea {
 .task-card h3 {
   margin: 0;
   color: var(--ak-text);
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.25;
 }
 
@@ -734,6 +936,7 @@ textarea {
   margin: 0;
   color: var(--ak-muted);
   font-size: 11px;
+  line-height: 1.35;
 }
 
 .meta,
@@ -741,6 +944,7 @@ textarea {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
+  align-items: center;
 }
 
 .meta span,
@@ -756,8 +960,32 @@ textarea {
   text-transform: uppercase;
 }
 
+.card-provider-chip {
+  max-width: 100%;
+  border-color: color-mix(in srgb, var(--ak-line) 70%, transparent);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.card-provider-chip.usage-healthy {
+  color: var(--ak-green);
+}
+
+.card-provider-chip.usage-warning {
+  color: var(--ak-amber);
+}
+
+.card-provider-chip.usage-blocked {
+  color: var(--ak-red);
+}
+
+.card-provider-chip.usage-unknown {
+  color: var(--ak-muted);
+}
+
 .card-actions {
   justify-content: flex-end;
+  gap: 4px;
 }
 
 .empty {
@@ -1723,7 +1951,12 @@ textarea {
 @media (max-width: 920px) {
   .topbar {
     align-items: flex-start;
-    flex-direction: column;
+    grid-template-columns: 1fr;
+  }
+
+  .board-provider-strip,
+  .toolbar {
+    justify-content: flex-start;
   }
 
   .kanban {

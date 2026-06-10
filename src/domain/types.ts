@@ -128,6 +128,7 @@ export interface SerializedError {
 export interface BoardState {
   tasks: TaskSpec[];
   runs: RunRecord[];
+  providerUsage: ProviderUsageSnapshot[];
   completedVisible: boolean;
   queuePaused: boolean;
   queueExecutionMode: QueueExecutionMode;
@@ -140,6 +141,34 @@ export interface BoardState {
   runnerOptions: RunnerConfigurationOption[];
   repositoryBranches: Record<string, Array<{ label: string; name: string; current: boolean }>>;
   repositoryDiscovery?: RepositoryDiscoveryInfo;
+}
+
+export type ProviderUsageStatus = 'healthy' | 'warning' | 'blocked' | 'unknown';
+export type ProviderUsageConfidence = 'direct' | 'observed' | 'manual' | 'unavailable';
+
+export interface ProviderUsageSnapshot {
+  providerId: 'codex' | 'claude' | 'copilot';
+  status: ProviderUsageStatus;
+  confidence: ProviderUsageConfidence;
+  label: string;
+  percentRemaining?: number;
+  percentUsed?: number;
+  resetAt?: string;
+  usageWindows?: ProviderUsageWindow[];
+  checkedAt?: string;
+  source: 'codex-doctor' | 'codex-status' | 'claude-auth-status' | 'claude-usage' | 'copilot-web' | 'runner-failure' | 'manual';
+  rawSummary?: string;
+  error?: string;
+}
+
+export interface ProviderUsageWindow {
+  id: string;
+  label: string;
+  percentUsed?: number;
+  percentRemaining?: number;
+  windowMinutes?: number;
+  resetAt?: string;
+  resetAfterSeconds?: number;
 }
 
 export interface RepositoryDiscoveryInfo {

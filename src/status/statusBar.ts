@@ -36,13 +36,17 @@ export async function showStatusBarActions(orchestrator: Orchestrator): Promise<
   const pauseLabel = orchestrator.isQueuePaused() ? 'Resume queue' : 'Pause queue';
   const choice = await vscode.window.showQuickPick(
     [
-      { label: '$(layout) Open board', command: 'agenticKanbasutra.open' },
+      { label: '$(layout) Open board in editor', command: 'agenticKanbasutra.open' },
       { label: '$(add) New task', command: 'agenticKanbasutra.newTask' },
       { label: '$(play) Run next task', command: 'agenticKanbasutra.runNext' },
       { label: orchestrator.isQueuePaused() ? '$(debug-continue) Resume queue' : '$(debug-pause) Pause queue', command: 'agenticKanbasutra.toggleQueue' },
       { label: '$(shield) Check Copilot setup', command: 'agenticKanbasutra.checkCopilot' },
       { label: '$(hubot) Check Codex setup', command: 'agenticKanbasutra.checkCodex' },
       { label: '$(sparkle) Check Claude setup', command: 'agenticKanbasutra.checkClaude' },
+      { label: '$(pulse) Check Codex usage', command: 'agenticKanbasutra.checkCodexUsage' },
+      { label: '$(pulse) Check Claude usage', command: 'agenticKanbasutra.checkClaudeUsage' },
+      { label: '$(link-external) View Copilot usage', command: 'agenticKanbasutra.viewCopilotUsage' },
+      { label: '$(sync) Update provider health', command: 'agenticKanbasutra.updateProviderHealth' },
       { label: '$(settings-gear) Open AgenticKanbasutra settings', command: 'agenticKanbasutra.openSettings' }
     ],
     {

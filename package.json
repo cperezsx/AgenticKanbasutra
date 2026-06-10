@@ -2,7 +2,7 @@
   "name": "agentickanbasutra",
   "displayName": "AgenticKanbasutra",
   "description": "A personal VS Code workbench for planning, running, and reviewing coding-agent attempts.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "cperezsx",
   "license": "MIT",
   "preview": true,
@@ -44,6 +44,10 @@
     "onCommand:agenticKanbasutra.checkCopilot",
     "onCommand:agenticKanbasutra.checkCodex",
     "onCommand:agenticKanbasutra.checkClaude",
+    "onCommand:agenticKanbasutra.checkCodexUsage",
+    "onCommand:agenticKanbasutra.checkClaudeUsage",
+    "onCommand:agenticKanbasutra.viewCopilotUsage",
+    "onCommand:agenticKanbasutra.updateProviderHealth",
     "onCommand:agenticKanbasutra.statusBarActions",
     "onCommand:agenticKanbasutra.toggleQueue",
     "onCommand:agenticKanbasutra.openSettings"
@@ -113,6 +117,26 @@
         "command": "agenticKanbasutra.checkClaude",
         "title": "%agenticKanbasutra.command.checkClaude%",
         "icon": "$(sparkle)"
+      },
+      {
+        "command": "agenticKanbasutra.checkCodexUsage",
+        "title": "%agenticKanbasutra.command.checkCodexUsage%",
+        "icon": "$(pulse)"
+      },
+      {
+        "command": "agenticKanbasutra.checkClaudeUsage",
+        "title": "%agenticKanbasutra.command.checkClaudeUsage%",
+        "icon": "$(pulse)"
+      },
+      {
+        "command": "agenticKanbasutra.viewCopilotUsage",
+        "title": "%agenticKanbasutra.command.viewCopilotUsage%",
+        "icon": "$(link-external)"
+      },
+      {
+        "command": "agenticKanbasutra.updateProviderHealth",
+        "title": "%agenticKanbasutra.command.updateProviderHealth%",
+        "icon": "$(sync)"
       },
       {
         "command": "agenticKanbasutra.statusBarActions",

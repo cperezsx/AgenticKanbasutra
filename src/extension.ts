@@ -76,6 +76,18 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       });
       await vscode.window.showTextDocument(document, { preview: true });
     }),
+    vscode.commands.registerCommand('agenticKanbasutra.checkCodexUsage', async () => {
+      await boardProvider.checkCodexUsage();
+    }),
+    vscode.commands.registerCommand('agenticKanbasutra.checkClaudeUsage', async () => {
+      await boardProvider.checkClaudeUsage();
+    }),
+    vscode.commands.registerCommand('agenticKanbasutra.viewCopilotUsage', async () => {
+      await boardProvider.viewCopilotUsage();
+    }),
+    vscode.commands.registerCommand('agenticKanbasutra.updateProviderHealth', async () => {
+      await boardProvider.updateProviderHealth();
+    }),
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration('agenticKanbasutra')) {
         void boardProvider.postState();
