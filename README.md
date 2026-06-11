@@ -2,7 +2,7 @@
 
 > A preview VS Code extension for planning, queueing, running, and reviewing coding-agent tasks across local Git repositories.
 
-[![Version](https://img.shields.io/badge/version-0.0.3-68f0a7)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.0.4-68f0a7)](CHANGELOG.md)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.92-65d8e9)](https://code.visualstudio.com/)
 [![License](https://img.shields.io/badge/license-MIT-f3bb58)](LICENSE)
 [![Status](https://img.shields.io/badge/status-preview-c99cff)](#preview-status)
@@ -173,7 +173,7 @@ Before queueing or running a Codex or Claude task, AgenticKanbasutra uses a fres
 
 Use `Update Health` to force a fresh best-effort read for locally checkable providers. Copilot remains a web/manual review in this preview.
 
-Usage badges show source, confidence, timestamp, and parsed readiness or quota details when the provider output includes them. For Codex, AgenticKanbasutra also tries to enrich `codex doctor` with the latest local `codex.rate_limits` event when available, showing primary and secondary window percentages and reset timing similar to `/status`. Claude keeps `claude auth status` as the safe non-interactive check and parses usage/reset details only when the local output includes them. Non-blocking local diagnostics, such as an old Git warning from `codex doctor`, are kept in the tooltip without marking Codex usage as blocked or warning. This is not an exact token counter; it is a preview health signal designed to avoid obvious blocked runs.
+Usage badges show source, confidence, timestamp, and parsed readiness or quota details when the provider output includes them. For Codex, AgenticKanbasutra also tries to enrich `codex doctor` with the latest local `codex.rate_limits` event when available, showing primary and secondary window percentages and reset timing similar to `/status`. Claude keeps `claude auth status` as the safe non-interactive check and parses usage/reset details only when the local output includes them. Reset countdowns are calculated from the absolute `resetAt` timestamp when available, so cached Claude or Codex snapshots do not keep showing stale `resetAfterSeconds` values after time has passed. Non-blocking local diagnostics, such as an old Git warning from `codex doctor`, are kept in the tooltip without marking Codex usage as blocked or warning. This is not an exact token counter; it is a preview health signal designed to avoid obvious blocked runs.
 
 From the board header you can also open the full board in an editor tab or ask VS Code to move that board editor into a separate window when your VS Code version supports auxiliary editor windows.
 
@@ -254,6 +254,8 @@ Compile and validate:
 
 ```bash
 npm run check
+npm run test:time-display
+npm run test:claude-queue
 npm run package
 ```
 

@@ -1790,9 +1790,11 @@
       ? snapshot.usageWindows.map((window) => {
         const used = window.percentUsed !== undefined ? `${window.percentUsed}% used` : undefined;
         const remaining = window.percentRemaining !== undefined ? `${window.percentRemaining}% remaining` : undefined;
-        const reset = window.resetAfterSeconds !== undefined
-          ? `resets in ${formatDuration(window.resetAfterSeconds)}`
-          : window.resetAt ? `resets at ${window.resetAt}` : undefined;
+        // Prefer computing from resetAt so stale persisted seconds don't mislead
+        const resetSeconds = window.resetAt
+          ? Math.max(0, Math.round((new Date(window.resetAt).getTime() - Date.now()) / 1000))
+          : window.resetAfterSeconds;
+        const reset = resetSeconds !== undefined ? `resets in ${formatDuration(resetSeconds)}` : undefined;
         return `${window.label || window.id}: ${[used, remaining, reset].filter(Boolean).join(', ')}`;
       })
       : [];
@@ -1804,10 +1806,21 @@
       `${t('usageSource')}: ${snapshot.source || 'unknown'}`,
       `${t('usageConfidence')}: ${snapshot.confidence || 'unknown'}`,
       `${t('usageLastChecked')}: ${snapshot.checkedAt ? relativeTime(snapshot.checkedAt) : 'never'}`,
-      `${t('usageReset')}: ${snapshot.resetAt || 'unknown'}`,
+      `${t('usageReset')}: ${snapshot.resetAt ? formatResetAt(snapshot.resetAt) : 'unknown'}`,
       snapshot.rawSummary ? shorten(snapshot.rawSummary, 220) : t('usageUnavailable')
     ];
     return lines.filter(Boolean).join('\n');
+  }
+
+  function formatResetAt(value) {
+    if (!value) return 'unknown';
+    const timestamp = new Date(value).getTime();
+    if (Number.isFinite(timestamp)) {
+      const secondsUntil = Math.round((timestamp - Date.now()) / 1000);
+      if (secondsUntil > 60) return `in ${formatDuration(secondsUntil)}`;
+      if (secondsUntil >= 0) return 'soon';
+    }
+    return value;
   }
 
   function formatDuration(totalSeconds) {
@@ -1834,7 +1847,9 @@
       return `${minutes}m ago`;
     }
     const hours = Math.round(minutes / 60);
-    return `${hours}h ago`;
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.round(hours / 24);
+    return `${days}d ago`;
   }
 
   function formatStatus(status) {
