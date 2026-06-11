@@ -24,6 +24,7 @@ interface UsageCommand {
   source: ProviderUsageSnapshot['source'];
   parse: (providerId: 'codex' | 'claude', output: string, source: ProviderUsageSnapshot['source']) => ProviderUsageSnapshot;
   parseOnFailure?: boolean;
+  continueOnUnavailable?: boolean;
 }
 
 interface CodexRateLimitInfo {
@@ -118,6 +119,7 @@ export class ProviderUsageService {
     const config = vscode.workspace.getConfiguration('agenticKanbasutra');
     const executable = await resolveClaudeExecutable(config.get<string>('runners.claudeCli.executable', 'claude'));
     const snapshot = await checkCliUsage('claude', [
+      { command: executable.command, args: [...executable.argsPrefix, '-p', '/usage', '--output-format', 'json', '--no-session-persistence'], shell: executable.shell, source: 'claude-usage', parse: parseClaudeUsageCommand, parseOnFailure: true, continueOnUnavailable: true },
       { command: executable.command, args: [...executable.argsPrefix, 'auth', 'status'], shell: executable.shell, source: 'claude-auth-status', parse: parseClaudeAuthStatus, parseOnFailure: true },
       { command: executable.command, args: [...executable.argsPrefix, 'auth', 'status', '--text'], shell: executable.shell, source: 'claude-auth-status', parse: parseClaudeAuthStatus, parseOnFailure: true }
     ]);
@@ -411,6 +413,173 @@ function parseClaudeAuthStatus(
   return unavailableSnapshot(providerId, source, 'Auth unavailable', 'Claude auth status completed without output.');
 }
 
+function parseClaudeUsageCommand(
+  providerId: 'codex' | 'claude',
+  output: string,
+  source: ProviderUsageSnapshot['source']
+): ProviderUsageSnapshot {
+  const checkedAt = new Date().toISOString();
+  const json = tryParseJsonObject(output.trim()) as { result?: string; is_error?: boolean; subtype?: string } | undefined;
+  const usageText = typeof json?.result === 'string'
+    ? json.result
+    : extractClaudeUsageText(output) ?? output;
+  const rawSummary = safeSummary(usageText);
+  const windows = parseClaudeUsageWindows(usageText, checkedAt);
+
+  if (windows.length === 0) {
+    if (json?.is_error === true || /login required|not\s+(authenticated|logged in)|not logged in/i.test(usageText)) {
+      return {
+        providerId,
+        status: 'blocked',
+        confidence: 'direct',
+        label: 'Login required',
+        checkedAt,
+        source,
+        rawSummary
+      };
+    }
+    return unavailableSnapshot(providerId, source, 'Usage unavailable', rawSummary || 'Claude usage completed without usage details.');
+  }
+
+  const primary = windows.find((window) => window.id === 'current-session') ?? windows[0];
+  const percentRemaining = primary.percentRemaining;
+  const status = percentRemaining !== undefined && percentRemaining <= 5
+    ? 'blocked'
+    : percentRemaining !== undefined && percentRemaining <= 25
+      ? 'warning'
+      : 'healthy';
+  const label = claudeUsageLabel(primary, windows);
+
+  return {
+    providerId,
+    status,
+    confidence: 'direct',
+    label,
+    percentRemaining,
+    percentUsed: primary.percentUsed,
+    resetAt: primary.resetAt,
+    usageWindows: windows,
+    checkedAt,
+    source,
+    rawSummary
+  };
+}
+
+function claudeUsageLabel(primary: ProviderUsageWindow, windows: ProviderUsageWindow[]): string {
+  const parts: string[] = [];
+  if (primary.percentRemaining !== undefined) {
+    const primaryName = primary.id === 'current-session' ? 'session' : primary.label.toLowerCase();
+    parts.push(`${primary.percentRemaining}% left ${primaryName}`);
+  } else {
+    parts.push('Usage available');
+  }
+  const reset = primary.resetAt ? formatDuration(secondsUntil(primary.resetAt)) : undefined;
+  if (reset) {
+    parts.push(`resets in ${reset}`);
+  }
+  const week = windows.find((window) => window.id.includes('week'));
+  if (week?.percentRemaining !== undefined) {
+    parts.push(`week ${week.percentRemaining}% left`);
+  }
+  return parts.join(' · ');
+}
+
+function extractClaudeUsageText(output: string): string | undefined {
+  const marker = 'You are currently using your subscription to power your Claude Code usage';
+  const markerIndex = output.indexOf(marker);
+  if (markerIndex >= 0) {
+    return output.slice(markerIndex).replace(/\\n/g, '\n').replace(/\\"/g, '"');
+  }
+  if (/Current session:\s*\d{1,3}\s*%\s*used/i.test(output)) {
+    return output.replace(/\\n/g, '\n').replace(/\\"/g, '"');
+  }
+  return undefined;
+}
+
+function parseClaudeUsageWindows(output: string, checkedAt: string): ProviderUsageWindow[] {
+  const windows: ProviderUsageWindow[] = [];
+  for (const line of output.split(/\r?\n/).map((value) => value.trim()).filter(Boolean)) {
+    const match = /^([^:]+):\s*(\d{1,3})\s*%\s*used(?:\s*[·-]\s*resets?\s+(.+))?$/i.exec(line);
+    const parsedMatch = match ?? /^([^:]+):\s*(\d{1,3})\s*%\s*used(?:\s*(?:[^A-Za-z0-9\s]\s*)?resets?\s+(.+))?$/i.exec(line);
+    if (!parsedMatch) {
+      continue;
+    }
+    const label = normalizeClaudeUsageLabel(parsedMatch[1]);
+    const percentUsed = clampPercent(Number(parsedMatch[2]));
+    const resetAt = parseClaudeResetAt(parsedMatch[3], checkedAt);
+    windows.push({
+      id: slugifyUsageWindow(label),
+      label,
+      percentUsed,
+      percentRemaining: clampPercent(100 - percentUsed),
+      resetAt,
+      resetAfterSeconds: resetAt ? secondsUntil(resetAt) : undefined
+    });
+  }
+  return windows;
+}
+
+function normalizeClaudeUsageLabel(value: string): string {
+  return value.trim().replace(/\s+/g, ' ');
+}
+
+function slugifyUsageWindow(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/\([^)]*\)/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '') || 'usage-window';
+}
+
+function parseClaudeResetAt(value: string | undefined, checkedAt: string): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+  const cleaned = value.replace(/\([^)]*\)/g, '').trim();
+  const direct = new Date(cleaned).getTime();
+  if (Number.isFinite(direct)) {
+    return new Date(direct).toISOString();
+  }
+
+  const reference = new Date(checkedAt);
+  const year = Number.isFinite(reference.getTime()) ? reference.getFullYear() : new Date().getFullYear();
+  const relativeMatch = /^(today|tomorrow),?\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)$/i.exec(cleaned);
+  if (relativeMatch) {
+    const date = new Date(reference);
+    if (/tomorrow/i.test(relativeMatch[1])) {
+      date.setDate(date.getDate() + 1);
+    }
+    date.setHours(to24Hour(Number(relativeMatch[2]), relativeMatch[4]), Number(relativeMatch[3] ?? 0), 0, 0);
+    return date.toISOString();
+  }
+
+  const monthMatch = /^([A-Za-z]{3,9})\s+(\d{1,2}),?\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)$/i.exec(cleaned);
+  if (!monthMatch) {
+    return undefined;
+  }
+  const month = monthIndex(monthMatch[1]);
+  if (month === undefined) {
+    return undefined;
+  }
+  let candidate = new Date(year, month, Number(monthMatch[2]), to24Hour(Number(monthMatch[3]), monthMatch[5]), Number(monthMatch[4] ?? 0), 0, 0);
+  const referenceTime = Number.isFinite(reference.getTime()) ? reference.getTime() : Date.now();
+  if (candidate.getTime() < referenceTime - 60 * 60 * 1000) {
+    candidate = new Date(year + 1, month, Number(monthMatch[2]), to24Hour(Number(monthMatch[3]), monthMatch[5]), Number(monthMatch[4] ?? 0), 0, 0);
+  }
+  return candidate.toISOString();
+}
+
+function to24Hour(hour: number, meridiem: string): number {
+  const normalized = hour % 12;
+  return /pm/i.test(meridiem) ? normalized + 12 : normalized;
+}
+
+function monthIndex(value: string): number | undefined {
+  const normalized = value.slice(0, 3).toLowerCase();
+  const index = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'].indexOf(normalized);
+  return index >= 0 ? index : undefined;
+}
+
 function enrichSnapshotWithParsedUsage(
   snapshot: ProviderUsageSnapshot,
   output: string,
@@ -675,10 +844,20 @@ async function checkCliUsage(providerId: 'codex' | 'claude', commands: UsageComm
   for (const command of commands) {
     const result = await runUsageCommand(command);
     if (result.ok) {
-      return command.parse(providerId, result.output ?? '', command.source);
+      const snapshot = command.parse(providerId, result.output ?? '', command.source);
+      if (command.continueOnUnavailable && snapshot.confidence === 'unavailable' && snapshot.status === 'unknown') {
+        errors.push(snapshot.rawSummary ?? 'Usage command returned no usable data.');
+        continue;
+      }
+      return snapshot;
     }
     if (command.parseOnFailure && result.output?.trim()) {
-      return command.parse(providerId, result.output, command.source);
+      const snapshot = command.parse(providerId, result.output, command.source);
+      if (command.continueOnUnavailable && snapshot.confidence === 'unavailable' && snapshot.status === 'unknown') {
+        errors.push(snapshot.rawSummary ?? result.error ?? 'Usage command returned no usable data.');
+        continue;
+      }
+      return snapshot;
     }
     errors.push(result.error ?? 'Usage command failed.');
   }
@@ -758,6 +937,19 @@ function tryParseJson(value: string): unknown | undefined {
   } catch {
     return undefined;
   }
+}
+
+function tryParseJsonObject(value: string): unknown | undefined {
+  const direct = tryParseJson(value);
+  if (direct !== undefined) {
+    return direct;
+  }
+  const start = value.indexOf('{');
+  const end = value.lastIndexOf('}');
+  if (start >= 0 && end > start) {
+    return tryParseJson(value.slice(start, end + 1));
+  }
+  return undefined;
 }
 
 function isFailStatus(status: string | undefined): boolean {

@@ -1791,8 +1791,9 @@
         const used = window.percentUsed !== undefined ? `${window.percentUsed}% used` : undefined;
         const remaining = window.percentRemaining !== undefined ? `${window.percentRemaining}% remaining` : undefined;
         // Prefer computing from resetAt so stale persisted seconds don't mislead
-        const resetSeconds = window.resetAt
-          ? Math.max(0, Math.round((new Date(window.resetAt).getTime() - Date.now()) / 1000))
+        const resetTimestamp = window.resetAt ? new Date(window.resetAt).getTime() : NaN;
+        const resetSeconds = Number.isFinite(resetTimestamp)
+          ? Math.max(0, Math.round((resetTimestamp - Date.now()) / 1000))
           : window.resetAfterSeconds;
         const reset = resetSeconds !== undefined ? `resets in ${formatDuration(resetSeconds)}` : undefined;
         return `${window.label || window.id}: ${[used, remaining, reset].filter(Boolean).join(', ')}`;

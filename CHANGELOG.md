@@ -2,6 +2,15 @@
 
 All notable changes to AgenticKanbasutra will be documented in this file.
 
+## 0.0.5
+
+- Added Claude `/usage` health parsing before `auth status`, so Claude provider health can show real current-session and weekly usage percentages plus reset times.
+- Kept Claude `auth status` as the fallback readiness signal when `/usage` is unavailable or cannot return usage details.
+- Made Claude `/usage` parsing tolerant of mixed stdout/stderr output, bullet separators, and reset times without minutes, with sidebar labels that show session remaining time and weekly remaining usage.
+- Changed Claude CLI resolution on Windows to prefer the native `claude.exe` binary behind the npm shim, avoiding shell interpretation of Markdown prompts that start with `#`.
+- Refined Claude model suggestions to prioritize Claude Code aliases (`fable`, `sonnet`, `opus`, `haiku`) and observed/configured model IDs instead of speculative version-specific IDs.
+- Expanded the Claude setup report with auth status, `/usage` output, and safer model-selection guidance.
+
 ## 0.0.4
 
 Provider usage time display fix for clearer Codex and Claude health signals.

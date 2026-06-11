@@ -1,4 +1,5 @@
 import { execFile } from 'child_process';
+import * as fs from 'fs/promises';
 import * as path from 'path';
 import { promisify } from 'util';
 
@@ -15,6 +16,17 @@ export interface ResolvedClaudeExecutable {
 export async function resolveClaudeExecutable(configuredExecutable: string): Promise<ResolvedClaudeExecutable> {
   const executable = configuredExecutable.trim() || 'claude';
   const resolvedPath = hasPathSegment(executable) ? executable : await resolveFromPath(executable);
+  const nativeBinary = process.platform === 'win32' ? await nativeClaudeBinaryFromShim(resolvedPath) : undefined;
+  if (nativeBinary) {
+    return {
+      command: nativeBinary,
+      argsPrefix: [],
+      shell: false,
+      resolvedPath: nativeBinary,
+      configuredExecutable: executable
+    };
+  }
+
   return {
     command: resolvedPath,
     argsPrefix: [],
@@ -35,11 +47,27 @@ async function resolveFromPath(executable: string): Promise<string> {
     if (process.platform !== 'win32') {
       return paths[0];
     }
-    return paths.find((item) => item.toLowerCase().endsWith('.cmd'))
-      ?? paths.find((item) => item.toLowerCase().endsWith('.exe'))
+    return paths.find((item) => item.toLowerCase().endsWith('.exe'))
+      ?? paths.find((item) => item.toLowerCase().endsWith('.cmd'))
+      ?? paths.find((item) => item.toLowerCase().endsWith('.ps1'))
+      ?? paths.find((item) => !path.extname(item))
       ?? paths[0];
   } catch {
     return executable;
+  }
+}
+
+async function nativeClaudeBinaryFromShim(shimPath: string): Promise<string | undefined> {
+  const lower = shimPath.toLowerCase();
+  if (!lower.endsWith('.cmd') && !lower.endsWith('.ps1') && path.basename(shimPath).toLowerCase() !== 'claude') {
+    return undefined;
+  }
+  const nativePath = path.join(path.dirname(shimPath), 'node_modules', '@anthropic-ai', 'claude-code', 'bin', 'claude.exe');
+  try {
+    await fs.access(nativePath);
+    return nativePath;
+  } catch {
+    return undefined;
   }
 }
 

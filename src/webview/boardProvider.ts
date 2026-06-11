@@ -1467,15 +1467,14 @@ function runnerConfigurationFor(
 
   if (id.startsWith('claude')) {
     const models = withConfiguredDefaultModel(
-        dedupeOptions([
+      dedupeOptions([
           { id: 'provider-default', label: 'Auto / Claude default', description: 'Let Claude Code use the configured default model.' },
-          { id: 'claude-opus-4-8', label: 'Claude Opus 4.8', description: 'Use when supported by the current Claude Code configuration.' },
-          { id: 'claude-opus-4-7', label: 'Claude Opus 4.7', description: 'Use when supported by the current Claude Code configuration.' },
-          { id: 'claude-opus-4-6', label: 'Claude Opus 4.6', description: 'Use when supported by the current Claude Code configuration.' },
-          { id: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6', description: 'Use when supported by the current Claude Code configuration.' },
-          { id: 'claude-haiku-4-5', label: 'Claude Haiku 4.5', description: 'Use when supported by the current Claude Code configuration.' },
+          { id: 'fable', label: 'Fable alias', description: 'Use the current Claude Code Fable alias when available.' },
           { id: 'sonnet', label: 'Sonnet alias', description: 'Use the current Claude Code Sonnet alias.' },
           { id: 'opus', label: 'Opus alias', description: 'Use the current Claude Code Opus alias.' },
+          { id: 'haiku', label: 'Haiku alias', description: 'Use the current Claude Code Haiku alias when available.' },
+          { id: 'claude-fable-5', label: 'Claude Fable 5', description: 'Use the installed Claude Code Fable model when available.' },
+          { id: 'claude-haiku-4-5', label: 'Claude Haiku 4.5', description: 'Use the observed Claude Code Haiku model when available.' },
           ...discovery.claudeModels
         ]),
       claudeDefaultModel

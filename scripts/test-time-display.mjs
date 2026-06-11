@@ -121,6 +121,60 @@ const claudeAuthJson = `{
 }`;
 assertEquals('real claude auth output → no reset', extractReset(claudeAuthJson), undefined);
 
+// ─── Claude /usage parser (mirrors src/usage/providerUsage.ts) ────────────────
+
+function parseClaudeUsageWindows(output, checkedAt) {
+  const windows = [];
+  for (const line of output.split(/\r?\n/).map((value) => value.trim()).filter(Boolean)) {
+    const match = /^([^:]+):\s*(\d{1,3})\s*%\s*used(?:\s*(?:[^A-Za-z0-9\s]\s*)?resets?\s+(.+))?$/i.exec(line);
+    if (!match) continue;
+    const label = match[1].trim().replace(/\s+/g, ' ');
+    const percentUsed = Math.max(0, Math.min(100, Math.round(Number(match[2]))));
+    const resetAt = parseClaudeResetAt(match[3], checkedAt);
+    windows.push({
+      id: label.toLowerCase().replace(/\([^)]*\)/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'usage-window',
+      label,
+      percentUsed,
+      percentRemaining: Math.max(0, Math.min(100, 100 - percentUsed)),
+      resetAt
+    });
+  }
+  return windows;
+}
+
+function parseClaudeResetAt(value, checkedAt) {
+  if (!value) return undefined;
+  const cleaned = value.replace(/\([^)]*\)/g, '').trim();
+  const reference = new Date(checkedAt);
+  const year = Number.isFinite(reference.getTime()) ? reference.getFullYear() : new Date().getFullYear();
+  const monthMatch = /^([A-Za-z]{3,9})\s+(\d{1,2}),?\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)$/i.exec(cleaned);
+  if (!monthMatch) return undefined;
+  const month = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'].indexOf(monthMatch[1].slice(0, 3).toLowerCase());
+  if (month < 0) return undefined;
+  const hour12 = Number(monthMatch[3]) % 12;
+  const hour = /pm/i.test(monthMatch[5]) ? hour12 + 12 : hour12;
+  return new Date(year, month, Number(monthMatch[2]), hour, Number(monthMatch[4] ?? 0), 0, 0).toISOString();
+}
+
+console.log('\n=== Claude /usage parser ===');
+const claudeUsageJson = {
+  result: [
+    'You are currently using your subscription to power your Claude Code usage',
+    '',
+    'Current session: 25% used · resets Jun 11, 12:39pm (Europe/Madrid)',
+    'Current week (all models): 3% used · resets Jun 13, 6pm (Europe/Madrid)'
+  ].join('\n')
+};
+const claudeWindows = parseClaudeUsageWindows(claudeUsageJson.result, '2026-06-11T06:20:00.000Z');
+assertEquals('Claude usage: two windows', claudeWindows.length, 2);
+assertEquals('Claude usage: current session id', claudeWindows[0].id, 'current-session');
+assertEquals('Claude usage: current session used', claudeWindows[0].percentUsed, 25);
+assertEquals('Claude usage: current session remaining', claudeWindows[0].percentRemaining, 75);
+assertEquals('Claude usage: weekly used', claudeWindows[1].percentUsed, 3);
+assertEquals('Claude usage: weekly remaining', claudeWindows[1].percentRemaining, 97);
+assert('Claude usage: reset parsed as ISO', /^\d{4}-\d{2}-\d{2}T/.test(claudeWindows[0].resetAt), claudeWindows[0].resetAt, 'ISO timestamp');
+assert('Claude usage: reset without minutes parsed as ISO', /^\d{4}-\d{2}-\d{2}T/.test(claudeWindows[1].resetAt), claudeWindows[1].resetAt, 'ISO timestamp');
+
 // ─── Stale resetAfterSeconds bug ──────────────────────────────────────────────
 
 console.log('\n=== Stale resetAfterSeconds (the main time bug) ===');
