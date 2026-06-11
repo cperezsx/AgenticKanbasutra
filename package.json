@@ -2,7 +2,7 @@
   "name": "agentickanbasutra",
   "displayName": "AgenticKanbasutra",
   "description": "A personal VS Code workbench for planning, running, and reviewing coding-agent attempts.",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "publisher": "cperezsx",
   "license": "MIT",
   "preview": true,

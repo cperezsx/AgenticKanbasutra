@@ -15,6 +15,8 @@ export async function checkClaudeEnvironment(repositoryPath?: string): Promise<C
   const configuredExecutable = config.get<string>('runners.claudeCli.executable', 'claude');
   const executable = await resolveClaudeExecutable(configuredExecutable);
   const version = await runCheck(executable.command, [...executable.argsPrefix, '--version'], executable.shell);
+  const auth = await runCheck(executable.command, [...executable.argsPrefix, 'auth', 'status'], executable.shell);
+  const usage = await runCheck(executable.command, [...executable.argsPrefix, '-p', '/usage', '--output-format', 'json', '--no-session-persistence'], executable.shell);
   const okForCli = version.ok;
 
   const markdown = [
@@ -25,7 +27,8 @@ export async function checkClaudeEnvironment(repositoryPath?: string): Promise<C
     '## Summary',
     '',
     `- Claude CLI runner: ${okForCli ? 'available' : 'not available'}`,
-    '- Claude authentication: not checked without starting a Claude Code session.',
+    `- Claude authentication: ${auth.ok ? 'available' : 'not available'}`,
+    `- Claude usage windows: ${usage.ok ? 'available' : 'not available'}`,
     '',
     '## Claude CLI',
     '',
@@ -36,10 +39,26 @@ export async function checkClaudeEnvironment(repositoryPath?: string): Promise<C
     '',
     fenced(version.output || version.error || 'No output.'),
     '',
+    '## Authentication',
+    '',
+    fenced(auth.output || auth.error || 'No output.'),
+    '',
+    '## Usage',
+    '',
+    fenced(usage.output || usage.error || 'No output.'),
+    '',
+    '## Model Suggestions',
+    '',
+    '- Prefer `Auto / Claude default` unless you need a specific family.',
+    '- Use aliases exposed by Claude Code first: `fable`, `sonnet`, `opus`, and `haiku` when available.',
+    '- Use full model IDs only when your installed Claude Code build or organization confirms them.',
+    '',
     '## Reference Commands',
     '',
     `- Check Claude CLI installation: \`${executable.resolvedPath} --version\`.`,
-    `- Run a non-interactive smoke task: \`${executable.resolvedPath} -p --output-format json "Say ready."\`.`,
+    `- Check Claude auth: \`${executable.resolvedPath} auth status\`.`,
+    `- Check Claude usage: \`${executable.resolvedPath} -p "/usage" --output-format json --no-session-persistence\`.`,
+    `- Run a non-interactive smoke task: \`${executable.resolvedPath} -p "Say ready." --output-format json --no-session-persistence\`.`,
     '',
     '## Recommended Flow',
     '',

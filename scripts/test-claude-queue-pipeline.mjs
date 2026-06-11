@@ -13,6 +13,7 @@
 import { execFile, spawn } from 'child_process';
 import { promisify } from 'util';
 import * as path from 'path';
+import * as fs from 'fs/promises';
 
 const execFileAsync = promisify(execFile);
 
@@ -149,11 +150,11 @@ function toolArgsFromProfile(profileId) {
   return profile.split(/\s*;\s*/).filter(Boolean).flatMap(toolArgsFromProfile);
 }
 
-function buildArgs(task, promptPath) {
+function buildArgs(task, promptText) {
   const baseArgs = [];
   const args = [
     ...baseArgs,
-    '-p', promptPath
+    '-p', promptText
   ];
   if (task.model.id && task.model.id !== 'provider-default') {
     args.push('--model', task.model.id);
@@ -166,21 +167,22 @@ function buildArgs(task, promptPath) {
 console.log('\n=== 2. Command Args Construction ===');
 
 const bypassTask = makeTask({ permissionProfile: 'bypass' });
-const bypassArgs = buildArgs(bypassTask, '/tmp/prompt.md');
+const bypassArgs = buildArgs(bypassTask, '# Fix login bug\n\nUse the task metadata.');
 assertContains('bypass: has -p', bypassArgs.join(' '), '-p');
+assertContains('bypass: passes markdown prompt text', bypassArgs.join(' '), '# Fix login bug');
 assertContains('bypass: has --model', bypassArgs.join(' '), '--model claude-sonnet-4-6');
 assertContains('bypass: has --permission-mode', bypassArgs.join(' '), '--permission-mode bypassPermissions');
 
 const readOnlyTask = makeTask({ permissionProfile: 'read_only' });
-const readOnlyArgs = buildArgs(readOnlyTask, '/tmp/prompt.md');
+const readOnlyArgs = buildArgs(readOnlyTask, '# Read only task');
 assert('read_only: no permission-mode flag', !readOnlyArgs.includes('--permission-mode'), readOnlyArgs, 'no --permission-mode');
 
 const workspaceTask = makeTask({ permissionProfile: 'allow_workspace' });
-const workspaceArgs = buildArgs(workspaceTask, '/tmp/prompt.md');
+const workspaceArgs = buildArgs(workspaceTask, '# Workspace task');
 assert('allow_workspace: no extra args by default', !workspaceArgs.includes('--permission-mode'), workspaceArgs, 'no --permission-mode');
 
 const noModelTask = makeTask({ model: { id: 'provider-default', label: 'Default' } });
-const noModelArgs = buildArgs(noModelTask, '/tmp/prompt.md');
+const noModelArgs = buildArgs(noModelTask, '# Default model task');
 assert('provider-default: no --model arg', !noModelArgs.includes('--model'), noModelArgs, 'no --model');
 
 // Tools profiles
@@ -414,8 +416,10 @@ async function resolveClaudeExecutable(configuredExecutable = 'claude') {
       const paths = stdout.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
       if (paths.length) {
         if (process.platform === 'win32') {
-          resolvedPath = paths.find(p => p.toLowerCase().endsWith('.cmd'))
-            ?? paths.find(p => p.toLowerCase().endsWith('.exe'))
+          resolvedPath = paths.find(p => p.toLowerCase().endsWith('.exe'))
+            ?? paths.find(p => p.toLowerCase().endsWith('.cmd'))
+            ?? paths.find(p => p.toLowerCase().endsWith('.ps1'))
+            ?? paths.find(p => !path.extname(p))
             ?? paths[0];
         } else {
           resolvedPath = paths[0];
@@ -425,12 +429,24 @@ async function resolveClaudeExecutable(configuredExecutable = 'claude') {
       // Not in PATH — use as-is
     }
   }
+  if (process.platform === 'win32') {
+    const nativePath = path.join(path.dirname(resolvedPath), 'node_modules', '@anthropic-ai', 'claude-code', 'bin', 'claude.exe');
+    try {
+      await fs.access(nativePath);
+      resolvedPath = nativePath;
+    } catch {
+      // Native binary unavailable; fall back to shell mode for cmd/bat shims.
+    }
+  }
   const shell = process.platform === 'win32' && /\.(cmd|bat)$/i.test(resolvedPath);
   return { command: resolvedPath, argsPrefix: [], shell, resolvedPath, configuredExecutable: executable };
 }
 
 const exe = await resolveClaudeExecutable('claude');
 assert('resolved claude path is non-empty', exe.resolvedPath.length > 0, exe.resolvedPath, 'non-empty string');
+if (process.platform === 'win32' && exe.resolvedPath.toLowerCase().endsWith('claude.exe')) {
+  assertEquals('native Claude exe avoids shell mode', exe.shell, false);
+}
 console.log(`        Resolved: ${exe.resolvedPath}`);
 console.log(`        Shell mode: ${exe.shell}`);
 

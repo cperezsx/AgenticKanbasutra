@@ -2,7 +2,7 @@
 
 > A preview VS Code extension for planning, queueing, running, and reviewing coding-agent tasks across local Git repositories.
 
-[![Version](https://img.shields.io/badge/version-0.0.4-68f0a7)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.0.5-68f0a7)](CHANGELOG.md)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.92-65d8e9)](https://code.visualstudio.com/)
 [![License](https://img.shields.io/badge/license-MIT-f3bb58)](LICENSE)
 [![Status](https://img.shields.io/badge/status-preview-c99cff)](#preview-status)
@@ -100,7 +100,7 @@ The board can also group tasks by repository or runner, which makes busy queues 
 | `generic-cli` | Custom local automation. | Runs a configurable command template. |
 | `copilot-cli` | Local GitHub Copilot CLI execution. | Captures output and maps configured permission arguments. |
 | `copilot-cloud` | GitHub-hosted dispatch preview. | Dispatches work and waits for follow-up. Final sync is not implemented yet. |
-| `claude-cli` | Local Claude Code CLI execution. | Runs `claude -p` in non-interactive mode with configurable permission arguments and explicit Claude model choices. |
+| `claude-cli` | Local Claude Code CLI execution. | Runs `claude -p` in non-interactive mode with configurable permission arguments and Claude Code alias/model choices. |
 | `codex-cli` | Local Codex CLI execution. | Runs `codex exec --json` and maps permission profiles to Codex sandbox modes. |
 | `codex-cloud` | Codex Cloud dispatch preview. | Dispatches work through configured cloud settings. |
 | `codex-manual` | Interactive Codex handoff. | Opens/copies a structured prompt and waits for manual completion. |
@@ -165,7 +165,7 @@ These reports help confirm executable resolution, authentication signals, and lo
 
 ## Provider Usage Health
 
-The sidebar includes a collapsible Provider Usage section, and the board header repeats the same signal as compact chips so provider health is visible while you work. Codex uses `codex doctor` and Claude uses `claude auth status` for non-interactive local readiness checks; Copilot opens the relevant GitHub usage page for manual review.
+The sidebar includes a collapsible Provider Usage section, and the board header repeats the same signal as compact chips so provider health is visible while you work. Codex uses `codex doctor`, Claude uses `claude -p "/usage" --output-format json --no-session-persistence` for local usage windows when available, and Copilot opens the relevant GitHub usage page for manual review.
 
 Task cards also show a compact provider health chip when the runner maps to Codex, Claude, or Copilot, so the board keeps the signal visible without adding another panel.
 
@@ -173,7 +173,7 @@ Before queueing or running a Codex or Claude task, AgenticKanbasutra uses a fres
 
 Use `Update Health` to force a fresh best-effort read for locally checkable providers. Copilot remains a web/manual review in this preview.
 
-Usage badges show source, confidence, timestamp, and parsed readiness or quota details when the provider output includes them. For Codex, AgenticKanbasutra also tries to enrich `codex doctor` with the latest local `codex.rate_limits` event when available, showing primary and secondary window percentages and reset timing similar to `/status`. Claude keeps `claude auth status` as the safe non-interactive check and parses usage/reset details only when the local output includes them. Reset countdowns are calculated from the absolute `resetAt` timestamp when available, so cached Claude or Codex snapshots do not keep showing stale `resetAfterSeconds` values after time has passed. Non-blocking local diagnostics, such as an old Git warning from `codex doctor`, are kept in the tooltip without marking Codex usage as blocked or warning. This is not an exact token counter; it is a preview health signal designed to avoid obvious blocked runs.
+Usage badges show source, confidence, timestamp, and parsed readiness or quota details when the provider output includes them. For Codex, AgenticKanbasutra also tries to enrich `codex doctor` with the latest local `codex.rate_limits` event when available, showing primary and secondary window percentages and reset timing similar to `/status`. Claude reads the local `/usage` command first, which can report current-session and weekly usage percentages with reset times; if that is unavailable, it falls back to `claude auth status` as a readiness-only signal. Reset countdowns are calculated from the absolute `resetAt` timestamp when available, so cached Claude or Codex snapshots do not keep showing stale `resetAfterSeconds` values after time has passed. Non-blocking local diagnostics, such as an old Git warning from `codex doctor`, are kept in the tooltip without marking Codex usage as blocked or warning. This is not an exact token counter; it is a preview health signal designed to avoid obvious blocked runs.
 
 From the board header you can also open the full board in an editor tab or ask VS Code to move that board editor into a separate window when your VS Code version supports auxiliary editor windows.
 
@@ -197,6 +197,8 @@ Common settings:
 | `agenticKanbasutra.runners.toolsProfileOptions` | Shared tools/profile selector values. |
 
 Provider CLIs must be installed and authenticated separately. AgenticKanbasutra does not install Copilot, Claude, Codex, GitHub CLI, MCP servers, or provider tools.
+
+For Claude Code, prefer `Auto / Claude default` or the CLI aliases `fable`, `sonnet`, `opus`, and `haiku` when available. Full model IDs can still be added through `agenticKanbasutra.runners.claude.modelOptions` when your installed Claude Code build or organization exposes them.
 
 ## Safety
 
