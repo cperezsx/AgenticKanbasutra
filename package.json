@@ -2,7 +2,7 @@
   "name": "agentickanbasutra",
   "displayName": "AgenticKanbasutra",
   "description": "A personal VS Code workbench for planning, running, and reviewing coding-agent attempts.",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "publisher": "cperezsx",
   "license": "MIT",
   "preview": true,
@@ -58,6 +58,8 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "check": "tsc -p ./ --noEmit",
+    "test:time-display": "node scripts/test-time-display.mjs",
+    "test:claude-queue": "node scripts/test-claude-queue-pipeline.mjs",
     "vscode:prepublish": "npm run compile",
     "package": "vsce package",
     "publish:marketplace": "vsce publish"

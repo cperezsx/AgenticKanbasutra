@@ -2,6 +2,17 @@
 
 All notable changes to AgenticKanbasutra will be documented in this file.
 
+## 0.0.4
+
+Provider usage time display fix for clearer Codex and Claude health signals.
+
+- Recomputed usage-window reset countdowns from `resetAt` in the webview instead of trusting stale persisted `resetAfterSeconds` values.
+- Changed provider reset tooltips from raw timestamps to relative labels such as `in 2h` or `soon` when the reset time is parseable.
+- Changed old health-check timestamps from long hour counts to day-level labels, for example `1d ago`.
+- Added a focused time-display validation script covering stale reset countdowns, reset formatting, and old relative timestamps.
+- Added a Claude queue-pipeline validation script covering prompt construction, permission/profile argument mapping, queue sorting, output summaries, and live CLI executable invocation.
+- Added npm script entries so the new validation scripts can be run as part of manual release checks.
+
 ## 0.0.3
 
 Provider usage health preview for safer queue decisions.

@@ -12,6 +12,7 @@ media/screenshots/**
 coverage/**
 src/**
 test/**
+scripts/**
 *.ts
 tsconfig.json
 package-lock.json
